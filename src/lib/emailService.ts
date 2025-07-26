@@ -69,17 +69,20 @@ export class EmailService {
       // Verificar erros da edge function
       if (response.error) {
         console.error('❌ Erro da edge function:', response.error);
+        console.error('📊 Dados de resposta:', response.data);
 
         // Melhor diagnóstico do erro
         if (response.error.message?.includes('Edge Function returned a non-2xx status code')) {
           // Se temos dados de erro na resposta, usar essa informação
           if (response.data && typeof response.data === 'object') {
-            throw new Error(`Servidor retornou erro: ${response.data.error || response.data.message || 'Erro interno'}`);
+            console.error('📋 Detalhes do erro do servidor:', response.data);
+            const errorMsg = response.data.error || response.data.message || 'Erro interno';
+            throw new Error(`❌ Erro do servidor: ${errorMsg}`);
           }
-          throw new Error('Erro interno no servidor de email. Verifique as configurações da API key do Resend.');
+          throw new Error('❌ Erro interno no servidor de email. A Edge Function não conseguiu processar a requisição.');
         }
 
-        throw new Error(`Erro no envio: ${response.error.message}`);
+        throw new Error(`❌ Erro no envio: ${response.error.message}`);
       }
 
       // Verificar resposta de sucesso
