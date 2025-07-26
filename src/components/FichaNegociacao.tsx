@@ -403,11 +403,17 @@ const FichaNegociacao = () => {
         console.log('🌐 URL:', 'https://msxhwlwxpvrtmyngwwcp.supabase.co');
 
         try {
-          // Teste mais simples - verificar se consegue fazer uma requisição básica
-          const { data: testData, error: testError } = await supabase
+          // Teste rápido com timeout manual
+          const testPromise = supabase
             .from('empreendimentos')
             .select('id, nome')
             .limit(1);
+
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('TIMEOUT_CONNECT')), 5000);
+          });
+
+          const { data: testData, error: testError } = await Promise.race([testPromise, timeoutPromise]) as any;
 
           if (testError) {
             console.error('❌ Erro na query de teste:', testError);
@@ -422,7 +428,8 @@ const FichaNegociacao = () => {
               throw new Error('TABELA_NAO_EXISTE');
             }
 
-            throw testError;
+            // Para qualquer outro erro da query, ativar modo offline
+            throw new Error('QUERY_ERROR');
           }
 
           console.log('✅ Conectividade OK! Dados de teste:', testData);
@@ -433,8 +440,9 @@ const FichaNegociacao = () => {
             throw networkError;
           }
 
-          // Se é erro de rede, vamos ativar modo offline
+          // Para qualquer erro (timeout, fetch failed, query error), ativar modo offline
           console.warn('⚠️ Modo offline ativado - usando dados de exemplo');
+          console.warn('🔧 Motivo:', networkError.message);
 
           // Ativar modo offline com dados de exemplo
           setOfflineMode(true);
@@ -448,6 +456,16 @@ const FichaNegociacao = () => {
             { id: 2, nome: 'Maria Santos', funcao: 'Liner' },
             { id: 3, nome: 'Pedro Costa', funcao: 'Closer' },
             { id: 4, nome: 'Ana Lima', funcao: 'Liner' }
+          ]);
+          setCategoriasPreco([
+            { id: 1, nome: 'Standard', empreendimento_id: 1 },
+            { id: 2, nome: 'Premium', empreendimento_id: 1 },
+            { id: 3, nome: 'VIP', empreendimento_id: 2 }
+          ]);
+          setTorres([
+            { id: 1, nome: 'Torre A', empreendimento_id: 1 },
+            { id: 2, nome: 'Torre B', empreendimento_id: 1 },
+            { id: 3, nome: 'Torre Ocean', empreendimento_id: 2 }
           ]);
           setLoading(false);
           return; // Sair da função sem tentar carregar do Supabase
