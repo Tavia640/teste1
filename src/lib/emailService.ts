@@ -28,19 +28,22 @@ export class EmailService {
       console.log('📡 Status da resposta:', response.status);
       console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
 
-      const responseText = await response.text();
-      console.log('📄 Resposta completa:', responseText);
+      let responseData;
+      try {
+        responseData = await response.json();
+        console.log('📄 Resposta completa:', responseData);
+      } catch (parseError) {
+        console.error('❌ Erro ao fazer parse da resposta:', parseError);
+        return {
+          success: false,
+          message: `❌ Resposta inválida da Edge Function (${response.status}): Não foi possível interpretar a resposta`
+        };
+      }
 
       if (!response.ok) {
         console.error('❌ Erro HTTP:', response.status, response.statusText);
 
-        let errorDetails = '';
-        try {
-          const errorData = JSON.parse(responseText);
-          errorDetails = errorData.message || errorData.error || responseText;
-        } catch {
-          errorDetails = responseText;
-        }
+        const errorDetails = responseData.message || responseData.error || 'Erro desconhecido';
 
         if (response.status === 500) {
           return {
@@ -138,7 +141,7 @@ export class EmailService {
                           '2. Selecione seu projeto: msxhwlwxpvrtmyngwwcp\n' +
                           '3. Vá em Settings → Edge Functions\n' +
                           '4. Adicione a variável:\n' +
-                          '   • Nome: RESEND_API_KEY\n' +
+                          '   ��� Nome: RESEND_API_KEY\n' +
                           '   • Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs\n\n' +
                           '⏰ Aguarde alguns minutos após salvar para aplicar.';
           }
