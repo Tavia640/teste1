@@ -120,7 +120,9 @@ const FichaNegociacao = () => {
   const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
   const [categoriasPreco, setCategoriasPreco] = useState<CategoriaPreco[]>([]);
   const [torres, setTorres] = useState<Torre[]>([]);
+  const [vendedores, setVendedores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offlineMode, setOfflineMode] = useState(false);
 
   // Estados para alertas de autorização
   const [alertas, setAlertas] = useState<{[key: string]: string}>({});
