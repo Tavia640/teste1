@@ -2,3 +2,6 @@ project_id = "msxhwlwxpvrtmyngwwcp"
 
 [functions.send-pdfs]
 verify_jwt = false
+
+[functions.send-pdfs.env]
+RESEND_API_KEY = "re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs"
