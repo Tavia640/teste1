@@ -1100,6 +1100,22 @@ const FichaNegociacao = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
+      {/* Alerta do Modo Offline */}
+      {offlineMode && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Modo Offline Ativado:</strong> Sem conexão com o servidor. Usando dados de exemplo.
+                O sistema continuará funcionando normalmente, mas os dados não serão salvos no banco de dados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
