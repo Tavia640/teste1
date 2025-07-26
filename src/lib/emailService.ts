@@ -148,15 +148,16 @@ export class EmailService {
       
       let errorMessage = '⚠️ Falha no envio automático por email.';
       
-      if (originalError.message?.includes('RESEND_API_KEY')) {
-        errorMessage += '\n\n🔑 Problema com a chave API do Resend.';
+      if (originalError.message?.includes('RESEND_API_KEY') || originalError.message?.includes('configuração')) {
+        errorMessage += '\n\n🔑 A chave API do Resend precisa ser configurada no servidor do Supabase.';
+        errorMessage += '\n\n🔗 Configure em: https://supabase.com/dashboard → Settings → Edge Functions';
       } else if (originalError.message?.includes('Timeout')) {
         errorMessage += '\n\n⏱️ O servidor demorou muito para responder.';
       } else if (originalError.message?.includes('non-2xx status code')) {
         errorMessage += '\n\n🔧 Erro de configuração do servidor.';
       }
-      
-      errorMessage += '\n\n✅ SOLUÇÃO: Os PDFs foram baixados automaticamente para seu computador.';
+
+      errorMessage += '\n\n✅ SOLUÇÃO IMEDIATA: Os PDFs foram baixados automaticamente para seu computador.';
       errorMessage += '\n\n📧 Por favor, envie-os manualmente para: admudrive2025@gavresorts.com.br';
       
       return {
