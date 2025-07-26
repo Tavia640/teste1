@@ -410,7 +410,7 @@ const FichaNegociacao = () => {
             .limit(1);
 
           const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('TIMEOUT_CONNECT')), 5000);
+            setTimeout(() => reject(new Error('TIMEOUT_CONNECT')), 2000);
           });
 
           const { data: testData, error: testError } = await Promise.race([testPromise, timeoutPromise]) as any;
