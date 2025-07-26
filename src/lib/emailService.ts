@@ -75,46 +75,22 @@ export class EmailService {
         console.error('🔍 Status da resposta:', response.status);
         console.error('🔍 Erro completo:', JSON.stringify(response.error, null, 2));
 
-        // Tentar fazer uma requisição direta para obter mais detalhes
-        try {
-          const directResponse = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
-              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
-            },
-            body: JSON.stringify(payload)
-          });
+        // Identificar tipo específico de erro
+        let errorMessage = 'Erro desconhecido no servidor de email';
 
-          const directText = await directResponse.text();
-          console.error('🔍 Resposta direta do servidor:', {
-            status: directResponse.status,
-            statusText: directResponse.statusText,
-            headers: Object.fromEntries(directResponse.headers.entries()),
-            body: directText
-          });
-
-          if (!directResponse.ok) {
-            throw new Error(`❌ Edge Function Error (${directResponse.status}): ${directText}`);
-          }
-
-        } catch (directError: any) {
-          console.error('❌ Erro na requisição direta:', directError);
-        }
-
-        // Melhor diagnóstico do erro
         if (response.error.message?.includes('Edge Function returned a non-2xx status code')) {
           // Se temos dados de erro na resposta, usar essa informação
           if (response.data && typeof response.data === 'object') {
             console.error('📋 Detalhes do erro do servidor:', response.data);
-            const errorMsg = response.data.error || response.data.message || 'Erro interno';
-            throw new Error(`❌ Erro do servidor: ${errorMsg}`);
+            errorMessage = response.data.error || response.data.message || 'Erro interno do servidor';
+          } else {
+            errorMessage = 'A Edge Function retornou erro 500. Verifique se a chave API do Resend está configurada corretamente no Supabase.';
           }
-          throw new Error('❌ Erro interno no servidor de email. Verifique logs da Edge Function para mais detalhes.');
+        } else {
+          errorMessage = response.error.message || 'Erro na comunicação com o servidor';
         }
 
-        throw new Error(`❌ Erro no envio: ${response.error.message}`);
+        throw new Error(`❌ ${errorMessage}`);
       }
 
       // Verificar resposta de sucesso
