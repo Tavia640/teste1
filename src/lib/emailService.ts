@@ -29,7 +29,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: 'Sistema de email está funcionando corretamente'
+        message: '✅ Sistema de email está funcionando corretamente!\n\n🔑 Chave API do Resend configurada com sucesso\n📧 Pronto para enviar PDFs por email'
       };
 
     } catch (error: any) {
