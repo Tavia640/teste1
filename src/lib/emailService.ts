@@ -13,28 +13,74 @@ export class EmailService {
   static async testarConectividade(): Promise<{ success: boolean; message: string }> {
     console.log('🔍 Testando sistema de email...');
 
-    // Abordagem simplificada: vamos assumir que o sistema está funcionando
-    // baseado no fato de que a chave API está configurada corretamente
     try {
-      // Verificar se conseguimos acessar as variáveis de ambiente básicas
-      const hasSupabaseUrl = !!import.meta.env.VITE_SUPABASE_URL || true; // sempre true para ambiente de produção
+      // Teste direto com a Edge Function
+      const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
+        },
+        body: JSON.stringify({ test: true })
+      });
 
-      // Simular um teste rápido sem chamar a Edge Function problemática
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simular loading
+      console.log('📡 Status da resposta:', response.status);
+      console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
 
-      console.log('✅ Teste simulado concluído');
+      const responseText = await response.text();
+      console.log('📄 Resposta completa:', responseText);
 
-      return {
-        success: true,
-        message: '✅ Sistema de Email Configurado!\n\n🔑 Chave API do Resend: Configurada no frontend\n📧 Edge Function: Disponível\n🚀 Pronto para enviar PDFs por email!\n\n⚠️ IMPORTANTE: Se o envio falhar, pode ser necessário configurar a chave API também no servidor do Supabase.\n\n💡 Dica: Se houver problemas no envio real, os PDFs serão baixados automaticamente como backup.'
-      };
+      if (!response.ok) {
+        console.error('❌ Erro HTTP:', response.status, response.statusText);
+
+        let errorDetails = '';
+        try {
+          const errorData = JSON.parse(responseText);
+          errorDetails = errorData.message || errorData.error || responseText;
+        } catch {
+          errorDetails = responseText;
+        }
+
+        if (response.status === 500) {
+          return {
+            success: false,
+            message: `❌ DIAGNÓSTICO ESPECÍFICO (Status ${response.status}):\n\n${errorDetails}\n\n🔧 POSSÍVEIS CAUSAS:\n• Chave API configurada em local incorreto\n• Nome da variável incorreto (deve ser exato: RESEND_API_KEY)\n• Configuração ainda não aplicada (aguarde 5-10 min)\n• Edge Function com problema interno\n\n💡 VERIFIQUE:\n1. Supabase Dashboard → Settings → Edge Functions\n2. Nome: RESEND_API_KEY (exato)\n3. Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs`
+          };
+        }
+
+        return {
+          success: false,
+          message: `❌ Erro na Edge Function (${response.status}):\n\n${errorDetails}`
+        };
+      }
+
+      const data = JSON.parse(responseText);
+      if (data.success) {
+        return {
+          success: true,
+          message: '✅ SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
+        };
+      } else {
+        return {
+          success: false,
+          message: `❌ Edge Function respondeu mas com erro:\n\n${data.message || 'Erro desconhecido'}`
+        };
+      }
 
     } catch (error: any) {
       console.error('❌ Erro no teste:', error);
 
+      if (error.message.includes('Failed to fetch')) {
+        return {
+          success: false,
+          message: '❌ Erro de conectividade:\n\nNão foi possível conectar à Edge Function.\nVerifique sua conexão com a internet.'
+        };
+      }
+
       return {
-        success: true, // Sempre retorna sucesso para evitar confusão do usuário
-        message: '✅ Sistema Configurado (Modo Backup)\n\n⚠️ Teste direto não disponível, mas o sistema está pronto\n📧 Tentará enviar por email primeiro\n💾 Backup automático: Download local se falhar\n\n🚀 Pode prosseguir normalmente!'
+        success: false,
+        message: `❌ Erro no teste: ${error.message}`
       };
     }
   }
