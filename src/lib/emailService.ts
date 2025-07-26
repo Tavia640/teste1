@@ -108,7 +108,7 @@ export class EmailService {
       let errorMessage = 'Erro desconhecido no envio de PDFs';
 
       if (error.message?.includes('RESEND_API_KEY')) {
-        errorMessage = 'Chave API do Resend não configurada. Acesse as configurações do projeto Supabase e configure a variável RESEND_API_KEY.';
+        errorMessage = 'Problema com a chave API do Resend. Verifique se a chave está correta e tem as permissões necessárias.';
       } else if (error.message?.includes('Failed to fetch')) {
         errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
       } else if (error.message?.includes('non-2xx status code')) {
