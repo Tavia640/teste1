@@ -100,15 +100,38 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse do body
     let requestData: any;
     try {
-      requestData = await req.json();
+      const bodyText = await req.text();
+      console.log("📋 Body recebido (primeiros 500 chars):", bodyText.substring(0, 500));
+
+      requestData = JSON.parse(bodyText);
       console.log("📋 Dados recebidos:", {
         keys: Object.keys(requestData),
         isTest: requestData?.test === true,
-        testValue: requestData?.test
+        testValue: requestData?.test,
+        hasClientData: !!requestData?.clientData,
+        hasFichaData: !!requestData?.fichaData,
+        hasPdfData1: !!requestData?.pdfData1,
+        hasPdfData2: !!requestData?.pdfData2
       });
-    } catch (parseError) {
+    } catch (parseError: any) {
       console.error("❌ Erro ao fazer parse do JSON:", parseError);
-      throw new Error("JSON inválido na requisição");
+      console.error("❌ Tipo do erro:", parseError.name);
+      console.error("❌ Mensagem do erro:", parseError.message);
+
+      const errorResponse: EmailResponse = {
+        success: false,
+        message: `JSON inválido na requisição: ${parseError.message}`,
+        error: "INVALID_JSON",
+        timestamp: new Date().toISOString()
+      };
+
+      return new Response(JSON.stringify(errorResponse), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders
+        },
+      });
     }
 
     // TESTE DE CONECTIVIDADE - Primeira prioridade
