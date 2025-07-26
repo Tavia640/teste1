@@ -968,16 +968,52 @@ const FichaNegociacao = () => {
   const testarEmail = async () => {
     try {
       console.log('🧪 Testando sistema de email...');
+
+      // Mostrar loading
+      const loadingAlert = () => {
+        const alertDiv = document.createElement('div');
+        alertDiv.id = 'email-test-loading';
+        alertDiv.innerHTML = `
+          <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                      background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                      z-index: 1000; text-align: center;">
+            <div style="margin-bottom: 10px;">🧪 Testando conectividade...</div>
+            <div style="font-size: 12px; color: #666;">Verificando API do Resend</div>
+          </div>
+        `;
+        document.body.appendChild(alertDiv);
+      };
+
+      loadingAlert();
+
       const resultado = await EmailService.testarConectividade();
 
+      // Remover loading
+      const loadingDiv = document.getElementById('email-test-loading');
+      if (loadingDiv) loadingDiv.remove();
+
       if (resultado.success) {
-        alert(`✅ Teste bem-sucedido!\n\n${resultado.message}`);
+        alert(`✅ TESTE CONCLUÍDO COM SUCESSO!\n\n${resultado.message}\n\n🚀 Pronto para enviar PDFs por email!`);
       } else {
-        alert(`❌ Teste falhou:\n\n${resultado.message}`);
+        let mensagemErro = `❌ TESTE FALHOU\n\n${resultado.message}`;
+
+        if (resultado.message.includes('RESEND_API_KEY')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nA chave API do Resend precisa ser configurada no painel do Supabase';
+        } else if (resultado.message.includes('non-2xx status code')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nProblema no servidor. Tente novamente em alguns minutos';
+        } else if (resultado.message.includes('Failed to fetch')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nProblema de conectividade. Verifique sua internet';
+        }
+
+        alert(mensagemErro);
       }
     } catch (error: any) {
+      // Remover loading em caso de erro
+      const loadingDiv = document.getElementById('email-test-loading');
+      if (loadingDiv) loadingDiv.remove();
+
       console.error('❌ Erro no teste:', error);
-      alert(`❌ Erro no teste: ${error.message}`);
+      alert(`❌ ERRO CRÍTICO NO TESTE\n\n${error.message}\n\n💡 Tente atualizar a página e testar novamente`);
     }
   };
 
