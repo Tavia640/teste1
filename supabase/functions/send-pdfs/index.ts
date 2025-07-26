@@ -35,8 +35,7 @@ interface EmailResponse {
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("🚀 Send PDFs function iniciada");
-  console.log("��� Método da requisição:", req.method);
-  console.log("🔍 Headers da requisição:", Object.fromEntries(req.headers.entries()));
+  console.log("📋 Método da requisição:", req.method);
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -44,15 +43,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("📨 Processando requisição de envio de PDFs...");
-
-    // Verificar variáveis de ambiente disponíveis
-    console.log("🔍 Verificando variáveis de ambiente...");
-    const envObject = Deno.env.toObject();
-    const availableEnvVars = Object.keys(envObject).filter(key =>
-      key.includes('RESEND') || key.includes('API') || key.includes('SUPABASE')
-    );
-    console.log("📋 Variáveis relacionadas disponíveis:", availableEnvVars);
+    console.log("📨 Processando requisição...");
 
     // Verificar se a API key está configurada
     const apiKey = Deno.env.get("RESEND_API_KEY");
@@ -65,11 +56,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!apiKey) {
       console.error("❌ RESEND_API_KEY não configurada!");
-      console.error("🔍 Todas as variáveis de ambiente:", Object.keys(envObject));
-
       const errorResponse: EmailResponse = {
         success: false,
-        message: "❌ RESEND_API_KEY não configurada no Supabase.\n\n📋 Passos para configurar:\n1. Acesse o painel do Supabase\n2. Settings → Edge Functions\n3. Adicione: RESEND_API_KEY = sua_chave_do_resend",
+        message: "❌ RESEND_API_KEY não configurada no Supabase.",
         error: "RESEND_API_KEY não configurada",
         timestamp: new Date().toISOString()
       };
@@ -84,10 +73,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!apiKey.startsWith('re_')) {
-      console.error("❌ RESEND_API_KEY parece estar incorreta! Deve começar com 're_'");
+      console.error("❌ RESEND_API_KEY parece estar incorreta!");
       const errorResponse: EmailResponse = {
         success: false,
-        message: "❌ RESEND_API_KEY parece estar incorreta.\n\nA chave deve começar com 're_'\nVerifique se copiou a chave correta do painel do Resend.",
+        message: "❌ RESEND_API_KEY parece estar incorreta. A chave deve começar com 're_'",
         error: "RESEND_API_KEY inválida",
         timestamp: new Date().toISOString()
       };
@@ -101,25 +90,29 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    console.log("✅ RESEND_API_KEY parece estar configurada corretamente");
+    console.log("✅ RESEND_API_KEY configurada corretamente");
 
     // Inicializar Resend
     const resend = new Resend(apiKey);
     console.log("✅ Resend inicializado com sucesso");
     
-    const requestData: SendPDFRequest | { test?: boolean } = await req.json();
+    // Parse do body
+    let requestData: any;
+    try {
+      requestData = await req.json();
+      console.log("📋 Dados recebidos:", {
+        keys: Object.keys(requestData),
+        isTest: requestData?.test === true,
+        testValue: requestData?.test
+      });
+    } catch (parseError) {
+      console.error("❌ Erro ao fazer parse do JSON:", parseError);
+      throw new Error("JSON inválido na requisição");
+    }
 
-    console.log("📋 Dados recebidos na requisição:", {
-      keys: Object.keys(requestData),
-      isTest: 'test' in requestData,
-      testValue: requestData.test,
-      requestDataType: typeof requestData,
-      requestDataString: JSON.stringify(requestData).substring(0, 200)
-    });
-
-    // Se é um teste de conectividade
-    if ('test' in requestData && requestData.test) {
-      console.log("🧪 Executando teste de conectividade...");
+    // TESTE DE CONECTIVIDADE - Primeira prioridade
+    if (requestData && requestData.test === true) {
+      console.log("🧪 TESTE DE CONECTIVIDADE DETECTADO");
 
       const testResponse: EmailResponse = {
         success: true,
@@ -127,6 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
         timestamp: new Date().toISOString()
       };
 
+      console.log("✅ Retornando resposta de teste bem-sucedida");
       return new Response(JSON.stringify(testResponse), {
         status: 200,
         headers: {
@@ -136,18 +130,20 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // Se não é teste, então deve ser envio real - validar dados
+    // Se chegou aqui, é um envio real de email
+    console.log("📧 Processando envio real de email...");
+    
     const { clientData, fichaData, pdfData1, pdfData2 } = requestData as SendPDFRequest;
 
-    // Validação rigorosa dos dados recebidos
+    // Validação dos dados para envio real
     if (!clientData) {
       throw new Error("Dados do cliente são obrigatórios");
     }
-
+    
     if (!fichaData) {
       throw new Error("Dados da negociação são obrigatórios");
     }
-
+    
     if (!pdfData1 || !pdfData2) {
       throw new Error("Ambos os PDFs são obrigatórios");
     }
@@ -258,20 +254,6 @@ const handler = async (req: Request): Promise<Response> => {
                   </tr>
                 </table>
               </div>
-            </div>
-
-            <!-- Anexos -->
-            <div style="background-color: #d1ecf1; padding: 20px; border-radius: 8px; border-left: 4px solid #17a2b8; margin-bottom: 25px;">
-              <h3 style="color: #0c5460; margin: 0 0 10px 0; font-size: 18px;">
-                📎 Documentos Anexados
-              </h3>
-              <ul style="margin: 0; padding-left: 20px; color: #0c5460;">
-                <li style="margin: 5px 0;">Ficha de Cadastro do Cliente</li>
-                <li style="margin: 5px 0;">Ficha de Negociação Completa</li>
-              </ul>
-              <p style="margin: 15px 0 0 0; color: #0c5460; font-weight: bold;">
-                ✅ Total: 2 documentos PDF anexados
-              </p>
             </div>
 
             <!-- Status -->
