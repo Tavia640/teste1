@@ -66,7 +66,7 @@ export class EmailService {
       } else {
         return {
           success: false,
-          message: `❌ Edge Function respondeu mas com erro:\n\n${data.message || 'Erro desconhecido'}`
+          message: `❌ Edge Function respondeu mas com erro:\n\n${responseData.message || 'Erro desconhecido'}`
         };
       }
 
@@ -200,7 +200,7 @@ export class EmailService {
         errorMessage += '\n\n🔑 A chave API do Resend precisa ser configurada no servidor do Supabase.';
         errorMessage += '\n\n🔗 Configure em: https://supabase.com/dashboard → Settings → Edge Functions';
       } else if (originalError.message?.includes('Timeout')) {
-        errorMessage += '\n\n⏱️ O servidor demorou muito para responder.';
+        errorMessage += '\n\n⏱��� O servidor demorou muito para responder.';
       } else if (originalError.message?.includes('non-2xx status code')) {
         errorMessage += '\n\n🔧 Erro de configuração do servidor.';
       }
