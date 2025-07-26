@@ -84,7 +84,17 @@ export class EmailService {
             console.error('📋 Detalhes do erro do servidor:', response.data);
             errorMessage = response.data.error || response.data.message || 'Erro interno do servidor';
           } else {
-            errorMessage = 'A Edge Function retornou erro 500. Verifique se a chave API do Resend está configurada corretamente no Supabase.';
+            // Erro 500 geralmente indica problema de configuração
+            errorMessage = '🔧 Problema de configuração detectado!\n\n' +
+                          '🔑 A chave API do Resend não está configurada no servidor.\n\n' +
+                          '💡 SOLUÇÃO:\n' +
+                          '1. Acesse: https://supabase.com/dashboard\n' +
+                          '2. Selecione seu projeto: msxhwlwxpvrtmyngwwcp\n' +
+                          '3. Vá em Settings → Edge Functions\n' +
+                          '4. Adicione a variável:\n' +
+                          '   • Nome: RESEND_API_KEY\n' +
+                          '   • Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs\n\n' +
+                          '⏰ Aguarde alguns minutos após salvar para aplicar.';
           }
         } else {
           errorMessage = response.error.message || 'Erro na comunicação com o servidor';
