@@ -109,6 +109,14 @@ const handler = async (req: Request): Promise<Response> => {
     
     const requestData: SendPDFRequest | { test?: boolean } = await req.json();
 
+    console.log("📋 Dados recebidos na requisição:", {
+      keys: Object.keys(requestData),
+      isTest: 'test' in requestData,
+      testValue: requestData.test,
+      requestDataType: typeof requestData,
+      requestDataString: JSON.stringify(requestData).substring(0, 200)
+    });
+
     // Se é um teste de conectividade
     if ('test' in requestData && requestData.test) {
       console.log("🧪 Executando teste de conectividade...");
