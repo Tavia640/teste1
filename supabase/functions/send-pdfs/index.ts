@@ -316,19 +316,30 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("❌ ERRO CRÍTICO na função send-pdfs:", error);
     console.error("📋 Stack trace:", error.stack);
-    
+    console.error("🔍 Tipo do erro:", typeof error);
+    console.error("🔍 Nome do erro:", error.name);
+    console.error("🔍 Mensagem do erro:", error.message);
+
+    // Informações detalhadas do ambiente
+    console.error("🌍 Variáveis de ambiente:", {
+      hasResendKey: !!Deno.env.get("RESEND_API_KEY"),
+      resendKeyLength: Deno.env.get("RESEND_API_KEY")?.length || 0
+    });
+
     const errorResponse: EmailResponse = {
       success: false,
-      message: error.message || "Erro interno do servidor",
-      error: error.message,
+      message: `Erro na Edge Function: ${error.message || "Erro interno do servidor"}`,
+      error: `${error.name}: ${error.message}`,
       timestamp: new Date().toISOString()
     };
-    
+
+    console.error("📤 Enviando resposta de erro:", errorResponse);
+
     return new Response(JSON.stringify(errorResponse), {
       status: 500,
-      headers: { 
-        "Content-Type": "application/json", 
-        ...corsHeaders 
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders
       },
     });
   }
