@@ -58,8 +58,7 @@ export class EmailService {
         };
       }
 
-      const data = JSON.parse(responseText);
-      if (data.success) {
+      if (responseData.success) {
         return {
           success: true,
           message: '✅ SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
@@ -141,7 +140,7 @@ export class EmailService {
                           '2. Selecione seu projeto: msxhwlwxpvrtmyngwwcp\n' +
                           '3. Vá em Settings → Edge Functions\n' +
                           '4. Adicione a variável:\n' +
-                          '   ��� Nome: RESEND_API_KEY\n' +
+                          '   • Nome: RESEND_API_KEY\n' +
                           '   • Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs\n\n' +
                           '⏰ Aguarde alguns minutos após salvar para aplicar.';
           }
