@@ -135,6 +135,13 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     // TESTE DE CONECTIVIDADE - Primeira prioridade
+    console.log("🔍 Verificando se é teste:", {
+      temTest: 'test' in requestData,
+      valorTest: requestData.test,
+      tipoTest: typeof requestData.test,
+      isTrue: requestData.test === true
+    });
+
     if (requestData && requestData.test === true) {
       console.log("🧪 TESTE DE CONECTIVIDADE DETECTADO");
 
