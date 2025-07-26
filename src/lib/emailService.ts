@@ -18,12 +18,24 @@ export class EmailService {
         body: { test: true }
       });
 
-      console.log('📡 Resultado do teste:', response);
+      console.log('📡 Resultado do teste completo:', {
+        error: response.error,
+        data: response.data,
+        status: response.status
+      });
 
       if (response.error) {
+        console.error('❌ Erro no teste:', response.error);
+        console.error('📊 Dados do erro:', response.data);
+
+        let errorMsg = response.error.message;
+        if (response.data && typeof response.data === 'object') {
+          errorMsg += `\n\nDetalhes: ${response.data.error || response.data.message || JSON.stringify(response.data)}`;
+        }
+
         return {
           success: false,
-          message: `Erro de conectividade: ${response.error.message}`
+          message: `Erro de conectividade: ${errorMsg}`
         };
       }
 
