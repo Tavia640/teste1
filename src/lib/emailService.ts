@@ -96,7 +96,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: 'PDFs enviados com sucesso para admudrive2025@gavresorts.com.br',
+        message: '✅ PDFs enviados com sucesso!\n\n📧 Destinatário: admudrive2025@gavresorts.com.br\n🆔 ID da mensagem: ' + (response.data.messageId || 'Não disponível'),
         messageId: response.data.messageId
       };
 
