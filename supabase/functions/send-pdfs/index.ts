@@ -36,6 +36,7 @@ interface EmailResponse {
 const handler = async (req: Request): Promise<Response> => {
   console.log("🚀 Send PDFs function iniciada");
   console.log("📋 Método da requisição:", req.method);
+  console.log("🔍 Headers da requisição:", Object.fromEntries(req.headers.entries()));
 
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
