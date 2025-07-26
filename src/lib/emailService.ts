@@ -29,13 +29,16 @@ export class EmailService {
         console.log('📡 Status da resposta:', response.status);
         console.log('📡 Headers da resposta:', Object.fromEntries(response.headers.entries()));
 
+        // Ler o body apenas uma vez
+        const responseText = await response.text();
+        console.log('📡 Texto da resposta:', responseText);
+
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('❌ Resposta não-OK:', errorText);
+          console.error('❌ Resposta não-OK:', responseText);
 
           // Se o erro é "Dados do cliente são obrigatórios", isso significa que a função está rodando
           // mas não está detectando o teste corretamente
-          if (errorText.includes('Dados do cliente são obrigatórios')) {
+          if (responseText.includes('Dados do cliente são obrigatórios')) {
             return {
               success: true,
               message: '✅ Edge Function está respondendo!\n\n⚠️ Problema na detecção de teste, mas a função está funcionando\n🔑 API do Resend provavelmente configurada\n📧 Sistema deve funcionar para envios reais'
@@ -44,11 +47,22 @@ export class EmailService {
 
           return {
             success: false,
-            message: `❌ Edge Function retornou erro ${response.status}:\n\n${errorText}`
+            message: `❌ Edge Function retornou erro ${response.status}:\n\n${responseText}`
           };
         }
 
-        const data = await response.json();
+        // Parse JSON se a resposta foi bem-sucedida
+        let data;
+        try {
+          data = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('❌ Erro ao fazer parse do JSON:', parseError);
+          return {
+            success: false,
+            message: `❌ Resposta inválida do servidor: ${responseText}`
+          };
+        }
+
         console.log('📡 Dados da resposta:', data);
 
         if (data.success) {
