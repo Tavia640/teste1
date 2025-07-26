@@ -115,7 +115,7 @@ const handler = async (req: Request): Promise<Response> => {
 
       const testResponse: EmailResponse = {
         success: true,
-        message: "Sistema de email está funcionando. API Key configurada corretamente.",
+        message: "✅ Sistema de email funcionando!\n\n🔑 API Key do Resend configurada\n📧 Pronto para enviar emails",
         timestamp: new Date().toISOString()
       };
 
@@ -128,17 +128,18 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Se não é teste, então deve ser envio real - validar dados
     const { clientData, fichaData, pdfData1, pdfData2 } = requestData as SendPDFRequest;
 
     // Validação rigorosa dos dados recebidos
     if (!clientData) {
       throw new Error("Dados do cliente são obrigatórios");
     }
-    
+
     if (!fichaData) {
       throw new Error("Dados da negociação são obrigatórios");
     }
-    
+
     if (!pdfData1 || !pdfData2) {
       throw new Error("Ambos os PDFs são obrigatórios");
     }
