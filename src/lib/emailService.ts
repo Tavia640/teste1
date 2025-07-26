@@ -26,7 +26,7 @@ export class EmailService {
 
       return {
         success: true,
-        message: '✅ Sistema de Email Configurado!\n\n🔑 Chave API do Resend: Configurada\n📧 Edge Function: Disponível\n🚀 Pronto para enviar PDFs por email!\n\n💡 Dica: Se houver problemas no envio real, os PDFs serão baixados automaticamente como backup.'
+        message: '✅ Sistema de Email Configurado!\n\n🔑 Chave API do Resend: Configurada no frontend\n📧 Edge Function: Disponível\n🚀 Pronto para enviar PDFs por email!\n\n⚠️ IMPORTANTE: Se o envio falhar, pode ser necessário configurar a chave API também no servidor do Supabase.\n\n💡 Dica: Se houver problemas no envio real, os PDFs serão baixados automaticamente como backup.'
       };
 
     } catch (error: any) {
