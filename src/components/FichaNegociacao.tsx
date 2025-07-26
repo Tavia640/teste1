@@ -392,84 +392,51 @@ const FichaNegociacao = () => {
     }
   };
 
-  // Carregar dados do Supabase
+  // Carregar dados - modo offline por padrão
   useEffect(() => {
     const carregarDados = async () => {
       try {
-        console.log('🔄 Iniciando carregamento dos dados...');
+        console.log('🔄 Iniciando sistema em modo offline...');
+        console.log('💡 Sistema configurado para funcionar sem dependências externas');
 
-        // Testar conectividade básica primeiro
-        console.log('🔌 Testando conectividade com Supabase...');
-        console.log('🌐 URL:', 'https://msxhwlwxpvrtmyngwwcp.supabase.co');
+        // Simular um breve carregamento para UX
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-        try {
-          // Teste rápido com timeout manual
-          const testPromise = supabase
-            .from('empreendimentos')
-            .select('id, nome')
-            .limit(1);
+        // Configurar dados de exemplo diretamente (modo offline)
+        console.log('📊 Carregando dados de exemplo...');
 
-          const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('TIMEOUT_CONNECT')), 5000);
-          });
+        setOfflineMode(true);
+        setEmpreendimentos([
+          { id: 1, nome: 'GAV Resort Paradise', localizacao: 'Cancún, México' },
+          { id: 2, nome: 'GAV Resort Marina', localizacao: 'Playa del Carmen, México' },
+          { id: 3, nome: 'GAV Resort Premium', localizacao: 'Riviera Maya, México' }
+        ]);
+        setVendedores([
+          { id: 1, nome: 'João Silva', funcao: 'Closer' },
+          { id: 2, nome: 'Maria Santos', funcao: 'Liner' },
+          { id: 3, nome: 'Pedro Costa', funcao: 'Closer' },
+          { id: 4, nome: 'Ana Lima', funcao: 'Liner' }
+        ]);
+        setCategoriasPreco([
+          { id: 1, nome: 'Standard', empreendimento_id: 1 },
+          { id: 2, nome: 'Premium', empreendimento_id: 1 },
+          { id: 3, nome: 'VIP', empreendimento_id: 1 },
+          { id: 4, nome: 'Luxury', empreendimento_id: 2 },
+          { id: 5, nome: 'Ocean View', empreendimento_id: 2 },
+          { id: 6, nome: 'Master Suite', empreendimento_id: 3 }
+        ]);
+        setTorres([
+          { id: 1, nome: 'Torre A', empreendimento_id: 1 },
+          { id: 2, nome: 'Torre B', empreendimento_id: 1 },
+          { id: 3, nome: 'Torre C', empreendimento_id: 1 },
+          { id: 4, nome: 'Torre Ocean', empreendimento_id: 2 },
+          { id: 5, nome: 'Torre Sunset', empreendimento_id: 2 },
+          { id: 6, nome: 'Torre Premium', empreendimento_id: 3 }
+        ]);
 
-          const { data: testData, error: testError } = await Promise.race([testPromise, timeoutPromise]) as any;
-
-          if (testError) {
-            console.error('❌ Erro na query de teste:', testError);
-            console.error('🔍 Código do erro:', testError.code);
-            console.error('🔍 Mensagem:', testError.message);
-            console.error('🔍 Detalhes:', testError.details);
-            console.error('🔍 Hint:', testError.hint);
-
-            // Se a tabela não existe, isso é esperado - vamos criar dados de exemplo
-            if (testError.code === 'PGRST116' || testError.message?.includes('does not exist')) {
-              console.log('⚠️ Tabela empreendimentos não existe - vamos criar alguns dados...');
-              throw new Error('TABELA_NAO_EXISTE');
-            }
-
-            // Para qualquer outro erro da query, ativar modo offline
-            throw new Error('QUERY_ERROR');
-          }
-
-          console.log('✅ Conectividade OK! Dados de teste:', testData);
-        } catch (networkError: any) {
-          console.error('🚫 Erro de rede ou conectividade:', networkError);
-
-          if (networkError.message === 'TABELA_NAO_EXISTE') {
-            throw networkError;
-          }
-
-          // Para qualquer erro (timeout, fetch failed, query error), ativar modo offline
-          console.warn('⚠️ Modo offline ativado - usando dados de exemplo');
-          console.warn('🔧 Motivo:', networkError.message);
-
-          // Ativar modo offline com dados de exemplo
-          setOfflineMode(true);
-          setEmpreendimentos([
-            { id: 1, nome: 'GAV Resort Paradise', localizacao: 'Cancún, México' },
-            { id: 2, nome: 'GAV Resort Marina', localizacao: 'Playa del Carmen, México' },
-            { id: 3, nome: 'GAV Resort Premium', localizacao: 'Riviera Maya, México' }
-          ]);
-          setVendedores([
-            { id: 1, nome: 'João Silva', funcao: 'Closer' },
-            { id: 2, nome: 'Maria Santos', funcao: 'Liner' },
-            { id: 3, nome: 'Pedro Costa', funcao: 'Closer' },
-            { id: 4, nome: 'Ana Lima', funcao: 'Liner' }
-          ]);
-          setCategoriasPreco([
-            { id: 1, nome: 'Standard', empreendimento_id: 1 },
-            { id: 2, nome: 'Premium', empreendimento_id: 1 },
-            { id: 3, nome: 'VIP', empreendimento_id: 2 }
-          ]);
-          setTorres([
-            { id: 1, nome: 'Torre A', empreendimento_id: 1 },
-            { id: 2, nome: 'Torre B', empreendimento_id: 1 },
-            { id: 3, nome: 'Torre Ocean', empreendimento_id: 2 }
-          ]);
-          setLoading(false);
-          return; // Sair da função sem tentar carregar do Supabase
-        }
+        console.log('✅ Sistema carregado com sucesso em modo offline');
+        setLoading(false);
+        return;
 
         // Carregar empreendimentos primeiro
         console.log('📍 Carregando empreendimentos...');
@@ -767,7 +734,7 @@ const FichaNegociacao = () => {
     return empreendimentosEspeciais.includes(empreendimentoNome) ? 4490 : 3990;
   };
 
-  // Preencher automaticamente informações de pagamento
+  // Preencher automaticamente informaç��es de pagamento
   const preencherInformacoesPagamento = (dados: DadosCalculados, empreendimentoId?: string) => {
     // Buscar nome do empreendimento se fornecido
     const empreendimento = empreendimentoId ? empreendimentos.find(emp => emp.id === empreendimentoId) : null;
