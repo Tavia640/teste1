@@ -431,11 +431,24 @@ const FichaNegociacao = () => {
             throw networkError;
           }
 
-          // Se é erro de rede, vamos ver mais detalhes
-          console.error('🔍 Tipo do erro:', networkError.name);
-          console.error('🔍 Mensagem:', networkError.message);
+          // Se é erro de rede, vamos ativar modo offline
+          console.warn('⚠️ Modo offline ativado - usando dados de exemplo');
 
-          throw new Error(`Conectividade: ${networkError.message}`);
+          // Ativar modo offline com dados de exemplo
+          setOfflineMode(true);
+          setEmpreendimentos([
+            { id: 1, nome: 'GAV Resort Paradise', localizacao: 'Cancún, México' },
+            { id: 2, nome: 'GAV Resort Marina', localizacao: 'Playa del Carmen, México' },
+            { id: 3, nome: 'GAV Resort Premium', localizacao: 'Riviera Maya, México' }
+          ]);
+          setVendedores([
+            { id: 1, nome: 'João Silva', funcao: 'Closer' },
+            { id: 2, nome: 'Maria Santos', funcao: 'Liner' },
+            { id: 3, nome: 'Pedro Costa', funcao: 'Closer' },
+            { id: 4, nome: 'Ana Lima', funcao: 'Liner' }
+          ]);
+          setLoading(false);
+          return; // Sair da função sem tentar carregar do Supabase
         }
 
         // Carregar empreendimentos primeiro
@@ -659,7 +672,7 @@ const FichaNegociacao = () => {
           ];
 
           setTorres(torresMock);
-          console.log('✅ Torres mockadas carregadas:', torresMock.length);
+          console.log('�� Torres mockadas carregadas:', torresMock.length);
         }
 
         console.log('🎉 Carregamento de dados concluído com sucesso!');
