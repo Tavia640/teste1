@@ -438,57 +438,7 @@ const FichaNegociacao = () => {
         setLoading(false);
         return;
 
-        // Carregar empreendimentos primeiro
-        console.log('📍 Carregando empreendimentos...');
 
-        try {
-          const { data: empreendimentosData, error: errorEmpreendimentos } = await supabase
-            .from('empreendimentos')
-            .select('*');
-
-          if (errorEmpreendimentos) {
-            console.warn('⚠️ Erro ao acessar empreendimentos no Supabase:', errorEmpreendimentos.message);
-            console.log('📋 Usando empreendimentos mockados...');
-            throw new Error('Usar dados mockados');
-          }
-
-          console.log('✅ Empreendimentos carregados do Supabase:', empreendimentosData?.length || 0);
-          setEmpreendimentos(empreendimentosData || []);
-
-        } catch (empError) {
-          console.log('🏗️ Carregando empreendimentos mockados...');
-
-          // Dados mockados de empreendimentos
-          const empreendimentosMock = [
-            {
-              id: '1',
-              nome: 'Gran Garden',
-              descricao: 'Empreendimento Gran Garden',
-              status: 'ATIVO',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              id: '2',
-              nome: 'Gran Valley',
-              descricao: 'Empreendimento Gran Valley',
-              status: 'ATIVO',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            },
-            {
-              id: '3',
-              nome: 'Paradise Resort',
-              descricao: 'Paradise Resort Premium',
-              status: 'ATIVO',
-              created_at: new Date().toISOString(),
-              updated_at: new Date().toISOString()
-            }
-          ];
-
-          setEmpreendimentos(empreendimentosMock);
-          console.log('✅ Empreendimentos mockados carregados:', empreendimentosMock.length);
-        }
 
         // Carregar tipos de venda normal com tratamento mais defensivo
         console.log('💰 Carregando tipos de venda normal...');
