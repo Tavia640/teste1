@@ -61,6 +61,28 @@ export interface DadosNegociacao {
 }
 
 export class PDFGenerator {
+  // Função para validar dados antes da geração
+  private static validarDados(dadosCliente: DadosCliente, dadosNegociacao?: DadosNegociacao): void {
+    if (!dadosCliente) {
+      throw new Error('Dados do cliente são obrigatórios');
+    }
+    
+    if (!dadosCliente.nome) {
+      throw new Error('Nome do cliente é obrigatório');
+    }
+    
+    if (dadosNegociacao) {
+      if (!dadosNegociacao.liner) {
+        console.warn('⚠️ Liner não informado');
+      }
+      if (!dadosNegociacao.closer) {
+        console.warn('⚠️ Closer não informado');
+      }
+    }
+    
+    console.log('✅ Dados validados com sucesso');
+  }
+
   // Função para formatar data no padrão brasileiro
   private static formatarDataBrasileira(data: string): string {
     if (!data) return '';
@@ -122,7 +144,23 @@ export class PDFGenerator {
     return '';
   }
 
+  // Função para tratar erros de geração de PDF
+  private static tratarErroGeracaoPDF(error: any, tipoPDF: string): never {
+    console.error(`❌ Erro ao gerar ${tipoPDF}:`, error);
+    
+    if (error.message?.includes('jsPDF')) {
+      throw new Error(`Erro na biblioteca de PDF: ${error.message}`);
+    }
+    
+    if (error.message?.includes('canvas')) {
+      throw new Error('Erro de renderização do PDF. Tente novamente.');
+    }
+    
+    throw new Error(`Falha na geração do ${tipoPDF}: ${error.message || 'Erro desconhecido'}`);
+  }
+
   private static createFormHeader(pdf: jsPDF, title: string, pageInfo: string) {
+    try {
     // Header principal com 3 colunas
     pdf.setDrawColor(0, 0, 0);
     pdf.setLineWidth(0.5);
@@ -150,6 +188,10 @@ export class PDFGenerator {
     pdf.text("Código:FOR.02.01.002", 162, 15);
     pdf.text("Rev.: 24/07/2025-Ver.02", 162, 19);
     pdf.text(pageInfo, 162, 23);
+    } catch (error) {
+      console.error('❌ Erro ao criar header do PDF:', error);
+      throw new Error('Erro ao criar cabeçalho do PDF');
+    }
   }
 
   private static createTableField(
@@ -161,6 +203,7 @@ export class PDFGenerator {
     width: number,
     height: number = 8
   ) {
+    try {
     // Borda do campo
     pdf.setDrawColor(0, 0, 0);
     pdf.rect(x, y, width, height);
@@ -358,45 +401,91 @@ export class PDFGenerator {
       console.error('Erro ao gerar PDF de cadastro:', error);
       throw new Error('Falha na geração do PDF de cadastro do cliente');
     }
-  }
+        // Garantir que o texto não seja muito longo
+        const maxWidth = width - 2;
+        const lines = pdf.splitTextToSize(value.toString(), maxWidth);
+        if (lines.length > 0) {
+    try {
+          pdf.text(lines[0], x + 1, y + height - 1);
+        }
 
+    } catch (error) {
+      console.error('❌ Erro ao criar campo da tabela:', error);
+      // Não interromper a geração por erro em um campo específico
+    }
   // PDF 2: Negociação Página 2 (página 2 do formulário original)
   static gerarPDFNegociacao(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): string {
-    const pdf = this.createPDFNegociacao(dadosCliente, dadosNegociacao);
+      const lines = pdf.splitTextToSize(text.toString(), width - 2);
     return pdf.output('datauristring');
   }
 
   static gerarPDFNegociacaoBlob(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): Blob {
     const pdf = this.createPDFNegociacao(dadosCliente, dadosNegociacao);
     return pdf.output('blob');
+    } catch (error) {
+      console.error('❌ Erro ao criar célula da tabela:', error);
+      // Não interromper a geração por erro em uma célula específica
+    }
   }
 
   // PDF 3: Negociação Página 3 (página 3 do formulário original - campos vazios)
   static gerarPDFPagina3(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): string {
+    try {
+      console.log('🔄 Iniciando geração do PDF de cadastro...');
+      this.validarDados(dadosCliente);
+      
     const pdf = this.createPDFPagina3(dadosCliente, dadosNegociacao);
-    return pdf.output('datauristring');
+      const result = pdf.output('datauristring');
+      
+      console.log('✅ PDF de cadastro gerado com sucesso');
+      return result;
+    } catch (error: any) {
+      this.tratarErroGeracaoPDF(error, 'PDF de cadastro');
+    }
   }
 
   static gerarPDFPagina3Blob(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): Blob {
+    try {
+      this.validarDados(dadosCliente);
     const pdf = this.createPDFPagina3(dadosCliente, dadosNegociacao);
     return pdf.output('blob');
+    } catch (error: any) {
+      this.tratarErroGeracaoPDF(error, 'PDF de cadastro (blob)');
+    }
   }
 
+    } catch (error: any) {
+      this.tratarErroGeracaoPDF(error, 'PDF de negociação (blob)');
+    }
   private static createPDFNegociacao(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): jsPDF {
     const pdf = new jsPDF('p', 'mm', 'a4');
     
     try {
+    try {
+      this.validarDados(dadosCliente, dadosNegociacao);
+      console.log('📄 Criando PDF de cadastro para:', dadosCliente.nome);
+      
+    } catch (error: any) {
+      this.tratarErroGeracaoPDF(error, 'PDF página 3');
+    }
       // PÁGINA 1 do PDF de Negociação (página 2 do formulário original)
       this.createFormHeader(pdf, "Ficha de Negociação de Cota", "Página: 2 de 2");
 
+    try {
+      this.validarDados(dadosCliente, dadosNegociacao);
       let yPos = 40;
 
+    } catch (error: any) {
+      this.tratarErroGeracaoPDF(error, 'PDF página 3 (blob)');
+    }
       // CLIENTE e CPF com dados reais
       pdf.setFont("helvetica", "bold");
       pdf.setFontSize(10);
       pdf.text("CLIENTE:", 10, yPos);
       pdf.line(30, yPos, 200, yPos);
       if (dadosCliente.nome) {
+      console.log('📄 Criando PDF de negociação para:', dadosCliente.nome);
+      
         pdf.setFont("helvetica", "normal");
         pdf.text(dadosCliente.nome, 32, yPos);
       }
@@ -457,6 +546,7 @@ export class PDFGenerator {
       // 3 linhas de dados com informações reais
       const tiposFixos = ["( ) Entrada", "( ) Sinal", "( ) Saldo"];
       for (let i = 0; i < 3; i++) {
+      console.log('✅ PDF de cadastro criado com sucesso');
         currentX = 10;
         const parcela = dadosNegociacao.parcelasPagasSala[i];
         
@@ -468,7 +558,7 @@ export class PDFGenerator {
         
         this.createTableCell(pdf, parcela?.quantidadeCotas || "", currentX, yPos, widths1[2], 8);
         currentX += widths1[2];
-        
+        const parcela = dadosNegociacao.parcelasPagasSala?.[i] || {};
         this.createTableCell(pdf, parcela?.valorDistribuido || "", currentX, yPos, widths1[3], 8);
         currentX += widths1[3];
         
@@ -503,7 +593,7 @@ export class PDFGenerator {
         
         this.createTableCell(pdf, contrato?.torre || "", currentX, yPos, contratoWidths[2], 12, 6);
         currentX += contratoWidths[2];
-        
+        const contrato = dadosNegociacao.contratos?.[i] || {};
         this.createTableCell(pdf, contrato?.apartamento || "", currentX, yPos, contratoWidths[3], 12, 6);
         currentX += contratoWidths[3];
         
@@ -557,12 +647,14 @@ export class PDFGenerator {
         
         this.createTableCell(pdf, tiposPagamento[i], currentX, yPos, pagWidths[0], 8, 6);
         currentX += pagWidths[0];
-        
-        this.createTableCell(pdf, info?.total || "", currentX, yPos, pagWidths[1], 8, 6);
-        currentX += pagWidths[1];
-        
-        this.createTableCell(pdf, info?.qtdParcelas || "", currentX, yPos, pagWidths[2], 8, 6);
-        currentX += pagWidths[2];
+        if (dadosNegociacao.informacoesPagamento) {
+          if (tiposPagamento[i] === "Entrada" && i === 0) {
+            info = dadosNegociacao.informacoesPagamento.find(inf => inf.tipo === "1ª Entrada");
+          } else if (tiposPagamento[i] === "Entrada" && i === 1) {
+            info = dadosNegociacao.informacoesPagamento.find(inf => inf.tipo === "2ª Entrada");
+          } else {
+            info = dadosNegociacao.informacoesPagamento.find(inf => inf.tipo === tiposPagamento[i]);
+          }
         
         this.createTableCell(pdf, info?.valorParcela || "", currentX, yPos, pagWidths[3], 8, 6);
         currentX += pagWidths[3];
@@ -713,18 +805,19 @@ export class PDFGenerator {
       return pdf;
 
     } catch (error) {
-      console.error('Erro ao gerar PDF de negociação:', error);
-      throw new Error('Falha na gera��ão do PDF de negociação');
+      console.error('❌ Erro ao criar PDF de cadastro:', error);
+      throw new Error(`Falha na geração do PDF de cadastro: ${error.message}`);
     }
   }
 
   // Função específica para criar a página 3 (campos vazios)
   private static createPDFPagina3(dadosCliente: DadosCliente, dadosNegociacao: DadosNegociacao): jsPDF {
+      console.log('✅ PDF de negociação criado com sucesso');
     const pdf = new jsPDF('p', 'mm', 'a4');
 
     try {
-      // Header da página 3
-      this.createFormHeader(pdf, "Ficha de Negociação de Cota", "Página: 2 de 2");
+      console.error('❌ Erro ao criar PDF de negociação:', error);
+      throw new Error(`Falha na geração do PDF de negociação: ${error.message}`);
 
       let yPos = 50;
 
@@ -733,6 +826,8 @@ export class PDFGenerator {
         "Tipo de Parcela Paga em Sala",
         "Valor Total Pago em Sala",
         "Quantidade de cotas",
+      console.log('📄 Criando PDF página 3 para:', dadosCliente.nome);
+      
         "Valor distribuido para cada Unidade",
         "Forma de Pagamento"
       ];
@@ -867,7 +962,21 @@ export class PDFGenerator {
 
     } catch (error) {
       console.error('Erro ao gerar PDF da página 3:', error);
+    try {
+      console.log('🔄 Iniciando geração do PDF de negociação...');
+      this.validarDados(dadosCliente, dadosNegociacao);
+      
       throw new Error('Falha na geração do PDF da página 3');
+      const result = pdf.output('datauristring');
+      console.log('✅ PDF página 3 criado com sucesso');
+      
+      console.log('✅ PDF de negociação gerado com sucesso');
+      return result;
+      console.error('❌ Erro ao criar PDF página 3:', error);
+      throw new Error(`Falha na geração do PDF da página 3: ${error.message}`);
     }
   }
 }
+
+    try {
+      this.validarDados(dadosCliente, dadosNegociacao);

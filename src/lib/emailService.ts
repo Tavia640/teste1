@@ -54,6 +54,15 @@ export class EmailService {
       // Validar dados antes do envio
       this.validarPayload(payload);
 
+      // Verificar se os PDFs são válidos (não estão corrompidos)
+      if (!this.validarPDFBase64(payload.pdfData1)) {
+        throw new Error('PDF de cadastro está corrompido ou inválido');
+      }
+      
+      if (!this.validarPDFBase64(payload.pdfData2)) {
+        throw new Error('PDF de negociação está corrompido ou inválido');
+      }
+
       // Invocar edge function com timeout
       console.log('🔄 Invocando edge function do Supabase...');
       const response = await supabase.functions.invoke('send-pdfs', {
@@ -113,6 +122,8 @@ export class EmailService {
         errorMessage = 'Erro de conexão com o servidor. Verifique sua internet e tente novamente.';
       } else if (error.message?.includes('non-2xx status code')) {
         errorMessage = 'Erro interno no servidor de email. Verifique as configurações da API key do Resend no painel do Supabase.';
+      } else if (error.message?.includes('PDF')) {
+        errorMessage = `Erro na geração do PDF: ${error.message}`;
       } else if (error.message) {
         errorMessage = error.message;
       }
@@ -124,6 +135,44 @@ export class EmailService {
     }
   }
   
+  // Função para validar se o PDF base64 é válido
+  private static validarPDFBase64(pdfBase64: string): boolean {
+    try {
+      // Verificar se é uma string válida
+      if (!pdfBase64 || typeof pdfBase64 !== 'string') {
+        console.error('❌ PDF não é uma string válida');
+        return false;
+      }
+      
+      // Verificar tamanho mínimo
+      if (pdfBase64.length < 1000) {
+        console.error('❌ PDF muito pequeno, provavelmente corrompido');
+        return false;
+      }
+      
+      // Verificar se é base64 válido
+      const base64Regex = /^[A-Za-z0-9+/]*={0,2}$/;
+      if (!base64Regex.test(pdfBase64)) {
+        console.error('❌ PDF não está em formato base64 válido');
+        return false;
+      }
+      
+      // Tentar decodificar para verificar se é válido
+      try {
+        atob(pdfBase64);
+      } catch (decodeError) {
+        console.error('❌ Erro ao decodificar base64:', decodeError);
+        return false;
+      }
+      
+      console.log('✅ PDF base64 validado com sucesso');
+      return true;
+    } catch (error) {
+      console.error('❌ Erro na validação do PDF:', error);
+      return false;
+    }
+  }
+
   private static validarPayload(payload: EmailPayload): void {
     if (!payload.clientData) {
       throw new Error('Dados do cliente são obrigatórios');
@@ -150,6 +199,15 @@ export class EmailService {
     
     if (payload.pdfData2.length < minPdfSize) {
       throw new Error('PDF de negociação parece estar vazio ou corrompido');
+    }
+    
+    // Validar se os dados do cliente são consistentes
+    if (payload.clientData.nome && payload.clientData.nome.length < 2) {
+      throw new Error('Nome do cliente deve ter pelo menos 2 caracteres');
+    }
+    
+    if (payload.clientData.cpf && payload.clientData.cpf.length < 11) {
+      console.warn('⚠️ CPF parece estar incompleto');
     }
     
     console.log('✅ Payload validado com sucesso');
