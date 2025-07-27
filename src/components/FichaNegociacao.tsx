@@ -1633,11 +1633,11 @@ const FichaNegociacao = () => {
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Entrada
             </Button>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-border">
+            <div className="overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[800px] border-collapse bg-white">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo</th>
+                    <th className="border border-border p-2 md:p-3 text-left text-sm md:text-base">Tipo</th>
                     <th className="border border-border p-3 text-left">Total *</th>
                     <th className="border border-border p-3 text-left">Qtd. Parcelas *</th>
                     <th className="border border-border p-3 text-left">Valor Parcela *</th>
