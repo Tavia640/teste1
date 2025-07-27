@@ -506,7 +506,7 @@ const FichaNegociacao = () => {
             throw new Error('Usar dados mockados');
           }
 
-          console.log('✅ Empreendimentos carregados do Supabase:', empreendimentosData?.length || 0);
+          console.log('��� Empreendimentos carregados do Supabase:', empreendimentosData?.length || 0);
           setEmpreendimentos(empreendimentosData || []);
 
         } catch (empError) {
@@ -1427,11 +1427,11 @@ const FichaNegociacao = () => {
               <Plus className="h-4 w-4 mr-2" />
               Adicionar Contrato
             </Button>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-border">
+            <div className="overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[900px] border-collapse bg-white">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo de Contrato *</th>
+                    <th className="border border-border p-2 md:p-3 text-left text-sm md:text-base">Tipo de Contrato *</th>
                     <th className="border border-border p-3 text-left">Empreendimento *</th>
                     <th className="border border-border p-3 text-left">Torre *</th>
                     <th className="border border-border p-3 text-left">Apartamento *</th>
