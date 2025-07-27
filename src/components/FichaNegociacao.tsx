@@ -1269,6 +1269,10 @@ const FichaNegociacao = () => {
           {/* Tipo de Parcela Paga em Sala */}
           <div>
             <Label className="text-sm sm:text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
+            <Button onClick={adicionarParcelaPagaSala} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm w-full sm:w-auto" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Parcela
+            </Button>
             <div className="mt-2 sm:mt-4 overflow-x-auto shadow-sm rounded-lg border">
               <table className="w-full min-w-[600px] sm:min-w-[800px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
@@ -1684,7 +1688,7 @@ const FichaNegociacao = () => {
                             onChange={(e) => {
                               const valor = parseFloat(e.target.value) || 0;
 
-                              // Validação específica para 1ª Entrada - não pode ser menor que R$ 1.000
+                              // Validação espec��fica para 1ª Entrada - não pode ser menor que R$ 1.000
                               if (info.tipo === '1ª Entrada' && valor > 0 && valor < 1000) {
                                 return; // Bloqueia valores menores que R$ 1.000 para primeira entrada
                               }
