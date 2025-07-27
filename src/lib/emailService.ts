@@ -39,12 +39,28 @@ export class EmailService {
           message: '✅ SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente (Status 200)\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
         };
       } else if (response.status === 500) {
-        // Se a chave está configurada como você confirmou, então o erro 500 pode ser
-        // devido à Edge Function não ter sido atualizada ainda com as correções
-        return {
-          success: true,
-          message: `⚠️ SISTEMA PROVAVELMENTE FUNCIONANDO:\n\n🔑 Chave API: Configurada (confirmado por você)\n📧 Edge Function: Respondendo (Status 500 devido a atualizações pendentes)\n\n💡 RECOMENDAÇÃO:\n• Tente enviar um PDF real - pode funcionar\n• Se falhar, será feito download automático\n• O sistema sempre protege seus dados\n\n🚀 Sistema pronto para uso com backup garantido!`
-        };
+        // Tentar ler a resposta para mais detalhes
+        try {
+          const responseText = await response.text();
+          console.log('📋 Corpo da resposta 500:', responseText);
+
+          if (responseText.includes('RESEND_API_KEY não configurada')) {
+            return {
+              success: false,
+              message: `❌ CHAVE API NÃO APLICADA:\n\n🔧 A variável RESEND_API_KEY foi configurada mas ainda não foi aplicada na Edge Function.\n\n💡 SOLUÇÕES:\n• Aguarde 2-3 minutos e teste novamente\n• A Edge Function pode precisar de reinicialização\n• Verifique se foi feito deploy da função\n\n⚠️ Enquanto isso, os PDFs serão baixados automaticamente.`
+            };
+          } else {
+            return {
+              success: false,
+              message: `❌ ERRO 500 NA EDGE FUNCTION:\n\n📋 Resposta: ${responseText}\n\n🔧 A função está executando mas retornando erro interno.\nVerifique os logs no painel do Supabase.`
+            };
+          }
+        } catch (parseError) {
+          return {
+            success: false,
+            message: `❌ ERRO 500 NA EDGE FUNCTION:\n\n🔧 Não foi possível ler os detalhes do erro.\n💡 Verifique os logs da Edge Function no painel do Supabase.`
+          };
+        }
       } else {
         return {
           success: false,
