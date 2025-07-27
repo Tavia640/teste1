@@ -2009,7 +2009,7 @@ const FichaNegociacao = () => {
             <Button
               onClick={async () => {
                 try {
-                  console.log('⚡ TESTE RÁPIDO - Edge Function...');
+                  console.log('⚡ TESTE DETECTOR - Verificando versão...');
                   const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
                     method: 'POST',
                     headers: {
@@ -2017,33 +2017,34 @@ const FichaNegociacao = () => {
                       'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
                       'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
                     },
-                    body: JSON.stringify({ test: true, quick: true })
+                    body: JSON.stringify({})
                   });
 
                   console.log('📡 Status:', response.status);
 
-                  let responseText = '';
                   try {
-                    responseText = await response.text();
-                    console.log('📄 Resposta:', responseText);
-                  } catch (textError) {
-                    console.log('⚠️ Erro ao ler resposta:', textError);
-                    responseText = 'Erro ao ler resposta';
-                  }
+                    const responseData = await response.json();
+                    console.log('📄 Resposta JSON:', responseData);
 
-                  if (response.status === 200) {
-                    alert(`✅ EDGE FUNCTION OK!\n\nStatus: ${response.status}\nResposta funcionando!`);
-                  } else {
-                    alert(`❌ Edge Function Status: ${response.status}\n\nMas isso pode ser normal para alguns testes.`);
+                    if (response.status === 200 && responseData.success) {
+                      alert(`✅ VERSÃO INFALÍVEL ATIVA!\n\nStatus: ${response.status}\nMensagem: ${responseData.message}\nModo: ${responseData.mode || 'normal'}`);
+                    } else if (response.status === 500) {
+                      alert(`❌ VERSÃO ANTIGA AINDA ATIVA!\n\nStatus: ${response.status}\nA versão nova ainda não foi aplicada.\nAguarde 1-2 minutos e teste novamente.`);
+                    } else {
+                      alert(`⚠️ Status inesperado: ${response.status}\n\nResposta: ${JSON.stringify(responseData)}`);
+                    }
+                  } catch (jsonError) {
+                    const text = await response.text();
+                    alert(`⚠️ Resposta não-JSON\n\nStatus: ${response.status}\nTexto: ${text.substring(0, 200)}`);
                   }
                 } catch (error: any) {
-                  alert(`❌ Erro no teste rápido: ${error.message}`);
+                  alert(`❌ Erro no teste: ${error.message}`);
                 }
               }}
               variant="secondary"
               className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              ⚡ Teste Rápido
+              🔍 Detector
             </Button>
             <Button
               onClick={salvarFicha}
