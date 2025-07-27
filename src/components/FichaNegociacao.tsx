@@ -1254,7 +1254,7 @@ const FichaNegociacao = () => {
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="padrao" id="padrao" />
-                  <Label htmlFor="padrao">Padr��o</Label>
+                  <Label htmlFor="padrao">Padrão</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="linear" id="linear" />
