@@ -1269,8 +1269,8 @@ const FichaNegociacao = () => {
           {/* Tipo de Parcela Paga em Sala */}
           <div>
             <Label className="text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full border border-border">
+            <div className="mt-4 overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[800px] border-collapse bg-white">
                 <thead>
                   <tr className="bg-muted">
                     <th className="border border-border p-3 text-left">Tipo de Parcela Paga em Sala</th>
