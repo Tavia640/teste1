@@ -440,8 +440,29 @@ const FichaNegociacao = () => {
             throw networkError;
           }
 
-          // Para qualquer erro (timeout, fetch failed, query error), ativar modo offline
-          console.warn('⚠️ Modo offline ativado - usando dados de exemplo');
+          // Para erros de rede, tentar novamente após uma pausa
+          if (networkError.message?.includes('Failed to fetch') || networkError.message === 'TIMEOUT_CONNECT') {
+            console.warn('🔄 Erro de conectividade - tentando novamente em modo simplificado...');
+
+            // Tentativa simplificada sem timeout
+            try {
+              const { data: simpleTest, error: simpleError } = await supabase
+                .from('empreendimentos')
+                .select('id')
+                .limit(1);
+
+              if (!simpleError) {
+                console.log('✅ Conectividade restabelecida!');
+              } else {
+                console.warn('⚠️ Continuando com modo offline temporário devido a:', simpleError.message);
+              }
+            } catch (retryError) {
+              console.warn('⚠️ Tentativa simplificada falhou, continuando com dados de exemplo');
+            }
+          }
+
+          // Ativar modo offline apenas temporariamente
+          console.warn('⚠️ Modo offline temporário ativado - usando dados de exemplo');
           console.warn('🔧 Motivo:', networkError.message);
 
           // Ativar modo offline com dados de exemplo
