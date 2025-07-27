@@ -1197,7 +1197,7 @@ const FichaNegociacao = () => {
             <Button 
               variant="ghost" 
               onClick={() => navigate('/cadastro-cliente')}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
             >
               <ArrowLeft className="h-4 w-4" />
               Voltar
@@ -1924,7 +1924,7 @@ const FichaNegociacao = () => {
                   alert(`Erro: ${error.message}`);
                 }
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
@@ -1936,7 +1936,7 @@ const FichaNegociacao = () => {
             <Button
               variant="outline"
               onClick={imprimirFichas}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="6,9 6,2 18,2 18,9"/>
@@ -1948,7 +1948,7 @@ const FichaNegociacao = () => {
             <Button
               onClick={testarEmail}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 12l2 2 4-4"/>
@@ -1958,7 +1958,7 @@ const FichaNegociacao = () => {
             </Button>
             <Button
               onClick={salvarFicha}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
