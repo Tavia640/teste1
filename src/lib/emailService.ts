@@ -15,6 +15,10 @@ export class EmailService {
 
     try {
       // Teste direto com a Edge Function
+      const testPayload = { test: true };
+      console.log('📤 Enviando payload de teste:', testPayload);
+      console.log('📤 JSON do payload:', JSON.stringify(testPayload));
+
       const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
         method: 'POST',
         headers: {
@@ -22,7 +26,7 @@ export class EmailService {
           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
           'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
         },
-        body: JSON.stringify({ test: true })
+        body: JSON.stringify(testPayload)
       });
 
       console.log('📡 Status da resposta:', response.status);
@@ -32,7 +36,7 @@ export class EmailService {
       if (response.status === 200) {
         return {
           success: true,
-          message: '�� SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente (Status 200)\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
+          message: '✅ SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente (Status 200)\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
         };
       } else if (response.status === 500) {
         return {
