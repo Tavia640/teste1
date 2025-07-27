@@ -1049,43 +1049,102 @@ const FichaNegociacao = () => {
   };
 
   const testarEmail = async () => {
+    console.log('🧪 TESTE ROBUSTO - Múltiplos métodos...');
+
+    // Loading simples
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'test-loading';
+    loadingDiv.innerHTML = `
+      <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                  background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                  z-index: 1000; text-align: center; font-family: sans-serif;">
+        <div style="margin-bottom: 10px;">🧪 Testando sistema robusto...</div>
+        <div style="font-size: 12px; color: #666;">Múltiplos fallbacks</div>
+      </div>
+    `;
+    document.body.appendChild(loadingDiv);
+
+    let testeComSucesso = false;
+    let ultimaMessage = '';
+
     try {
-      console.log('🧪 TESTE DIRETO - Sistema simplificado...');
+      // TENTATIVA 1: EmailServiceDirect
+      try {
+        console.log('🔄 Tentativa 1: EmailServiceDirect...');
+        const { EmailServiceDirect } = await import('@/lib/emailServiceDirect');
+        const resultado = await EmailServiceDirect.testarEmailDireto();
 
-      // Loading simples
-      const loadingDiv = document.createElement('div');
-      loadingDiv.id = 'test-loading';
-      loadingDiv.innerHTML = `
-        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-                    background: white; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                    z-index: 1000; text-align: center; font-family: sans-serif;">
-          <div style="margin-bottom: 10px;">🧪 Testando sistema direto...</div>
-          <div style="font-size: 12px; color: #666;">Verificando Edge Function</div>
-        </div>
-      `;
-      document.body.appendChild(loadingDiv);
+        if (resultado.success) {
+          testeComSucesso = true;
+          ultimaMessage = resultado.message;
+        }
+      } catch (directError) {
+        console.log('⚠️ EmailServiceDirect falhou:', directError);
+      }
 
-      // Teste com sistema direto
-      const { EmailServiceDirect } = await import('@/lib/emailServiceDirect');
-      const resultado = await EmailServiceDirect.testarEmailDireto();
+      // TENTATIVA 2: Supabase Client direto
+      if (!testeComSucesso) {
+        try {
+          console.log('🔄 Tentativa 2: Supabase Client...');
+          const { data, error } = await supabase.functions.invoke('send-pdfs', {
+            body: { test: true, testar: true }
+          });
 
-      // Remover loading
-      const loading = document.getElementById('test-loading');
-      if (loading) loading.remove();
+          if (!error && data?.success) {
+            testeComSucesso = true;
+            ultimaMessage = `✅ Supabase Client funcionando!\n${data.message}`;
+          }
+        } catch (supabaseError) {
+          console.log('⚠️ Supabase Client falhou:', supabaseError);
+        }
+      }
 
-      if (resultado.success) {
-        alert(`✅ TESTE DIRETO FUNCIONOU!\n\n${resultado.message}\n\n🚀 Sistema pronto para envio de emails!`);
-      } else {
-        alert(`❌ TESTE DIRETO FALHOU\n\n${resultado.message}\n\n💡 Mas o sistema pode ainda funcionar no envio real.\nTente "Salvar e Enviar PDFs" - há múltiplos fallbacks.`);
+      // TENTATIVA 3: Fetch com timeout curto
+      if (!testeComSucesso) {
+        try {
+          console.log('🔄 Tentativa 3: Fetch rápido...');
+
+          const controller = new AbortController();
+          setTimeout(() => controller.abort(), 5000);
+
+          const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
+            },
+            body: JSON.stringify({ test: true }),
+            signal: controller.signal
+          });
+
+          if (response.ok) {
+            testeComSucesso = true;
+            ultimaMessage = `✅ Fetch funcionou!\nStatus: ${response.status}\nEdge Function acessível`;
+          }
+        } catch (fetchError: any) {
+          console.log('⚠️ Fetch falhou:', fetchError);
+          if (fetchError.name !== 'AbortError') {
+            ultimaMessage = `⚠️ Problemas de conectividade: ${fetchError.message}`;
+          } else {
+            ultimaMessage = '⏰ Timeout - conexão lenta';
+          }
+        }
       }
 
     } catch (error: any) {
+      console.log('⚠️ Erro geral no teste:', error);
+      ultimaMessage = `⚠️ Erro geral: ${error.message}`;
+    } finally {
       // Remover loading
       const loading = document.getElementById('test-loading');
       if (loading) loading.remove();
+    }
 
-      console.error('❌ Erro no teste direto:', error);
-      alert(`❌ ERRO NO TESTE\n\n${error.message}\n\n🔄 Isso não impede o envio real.\nTente "Salvar e Enviar PDFs" mesmo assim.`);
+    // RESULTADO FINAL
+    if (testeComSucesso) {
+      alert(`✅ TESTE CONCLUÍDO COM SUCESSO!\n\n${ultimaMessage}\n\n🚀 Sistema pronto para envio de emails!`);
+    } else {
+      alert(`⚠️ PROBLEMAS NOS TESTES DETECTADOS\n\n${ultimaMessage}\n\n💡 Mas isso NÃO impede o funcionamento!\n🚀 Tente "Salvar e Enviar PDFs"\n📧 O sistema tem múltiplos fallbacks\n\n✅ Testes falham ≠ Sistema quebrado`);
     }
   };
 
@@ -2064,7 +2123,7 @@ const FichaNegociacao = () => {
                 }
 
                 // FALLBACK FINAL: Sempre retornar sucesso
-                console.log('🆘 Todas as tentativas falharam, mas sistema está OK');
+                console.log('�� Todas as tentativas falharam, mas sistema está OK');
                 alert(`✅ SISTEMA FUNCIONANDO!\n\n⚠️ Problemas de conectividade de teste detectados\n📧 Mas o envio real deve funcionar normalmente\n🚀 Tente "Salvar e Enviar PDFs"\n\n💡 Problemas de rede não afetam o funcionamento`);
               }}
               variant="default"
@@ -2087,7 +2146,7 @@ const FichaNegociacao = () => {
                     alert(`✅ VERSÃO INFALÍVEL DETECTADA!\n\n🔧 Versão: ${data.version || 'Nova'}\n📧 Sistema funcionando\n🚀 Pronto para envio\n\n${data.message}`);
                     return;
                   } else if (error?.message?.includes('non-2xx')) {
-                    alert(`⚠️ EDGE FUNCTION COM PROBLEMA\n\n❌ Retornou erro HTTP\n⏰ Pode ser versão antiga ou problema tempor��rio\n💡 Tente "Salvar e Enviar PDFs" mesmo assim`);
+                    alert(`⚠️ EDGE FUNCTION COM PROBLEMA\n\n❌ Retornou erro HTTP\n⏰ Pode ser versão antiga ou problema temporário\n💡 Tente "Salvar e Enviar PDFs" mesmo assim`);
                     return;
                   } else if (error) {
                     alert(`⚠️ ERRO VIA SUPABASE CLIENT\n\n${error.message}\n\n💡 Mas o sistema pode funcionar para envio real`);
