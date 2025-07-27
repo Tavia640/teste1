@@ -2022,20 +2022,34 @@ const FichaNegociacao = () => {
 
                   console.log('📡 Status:', response.status);
 
-                  try {
-                    const responseData = await response.json();
-                    console.log('📄 Resposta JSON:', responseData);
+                  // CORRIGIR ERRO DE BODY STREAM
+                  let responseText = '';
+                  let responseData = null;
 
-                    if (response.status === 200 && responseData.success) {
-                      alert(`✅ VERSÃO INFALÍVEL ATIVA!\n\nStatus: ${response.status}\nMensagem: ${responseData.message}\nModo: ${responseData.mode || 'normal'}`);
-                    } else if (response.status === 500) {
-                      alert(`❌ VERSÃO ANTIGA AINDA ATIVA!\n\nStatus: ${response.status}\nA versão nova ainda não foi aplicada.\nAguarde 1-2 minutos e teste novamente.`);
-                    } else {
-                      alert(`⚠️ Status inesperado: ${response.status}\n\nResposta: ${JSON.stringify(responseData)}`);
+                  try {
+                    // Tentar JSON primeiro
+                    responseText = await response.text();
+                    if (responseText) {
+                      try {
+                        responseData = JSON.parse(responseText);
+                      } catch {
+                        // Se não for JSON válido, usar o texto
+                        responseData = { message: responseText };
+                      }
                     }
-                  } catch (jsonError) {
-                    const text = await response.text();
-                    alert(`⚠️ Resposta não-JSON\n\nStatus: ${response.status}\nTexto: ${text.substring(0, 200)}`);
+                  } catch (readError) {
+                    console.log('⚠️ Erro ao ler resposta:', readError);
+                    responseData = { error: 'Não foi possível ler resposta' };
+                  }
+
+                  console.log('📄 Resposta processada:', responseData);
+
+                  if (response.status === 200 && responseData?.success) {
+                    alert(`✅ VERSÃO INFALÍVEL ATIVA!\n\nStatus: ${response.status}\nMensagem: ${responseData.message}\nModo: ${responseData.mode || 'normal'}`);
+                  } else if (response.status === 500) {
+                    alert(`❌ VERSÃO ANTIGA AINDA ATIVA!\n\nStatus: ${response.status}\nDetalhes: ${responseText.substring(0, 200)}\n\n⏰ A versão nova pode levar alguns minutos para ser aplicada.`);
+                  } else {
+                    alert(`⚠️ Status: ${response.status}\n\nResposta: ${responseText.substring(0, 300)}`);
                   }
                 } catch (error: any) {
                   alert(`❌ Erro no teste: ${error.message}`);
