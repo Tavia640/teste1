@@ -1194,18 +1194,18 @@ const FichaNegociacao = () => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate('/cadastro-cliente')}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-4 py-2 h-8 sm:h-10"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
               Voltar
             </Button>
-            <CardTitle className="text-2xl font-bold">
-              Ficha de Negociação de Cota
+            <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-center">
+              Ficha de Negociação
             </CardTitle>
-            <div className="w-20" /> {/* Spacer for centering */}
+            <div className="w-16 sm:w-20" /> {/* Spacer for centering */}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -1595,14 +1595,14 @@ const FichaNegociacao = () => {
           <Separator />
 
           {/* Local para Assinatura */}
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center space-y-2 sm:space-y-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               O financeiro descrito acima é referente a cada unidade separadamente.
             </p>
-            <div className="border-t border-border pt-4">
-              <Label className="text-base font-semibold">Assinatura do Cliente</Label>
-              <div className="h-16 border border-dashed border-border mt-2 flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">Local para Assinatura do Cliente</span>
+            <div className="border-t border-border pt-2 sm:pt-4">
+              <Label className="text-sm sm:text-base font-semibold">Assinatura do Cliente</Label>
+              <div className="h-12 sm:h-16 border border-dashed border-border mt-2 flex items-center justify-center">
+                <span className="text-muted-foreground text-xs sm:text-sm">Local para Assinatura</span>
               </div>
             </div>
           </div>
@@ -1611,23 +1611,23 @@ const FichaNegociacao = () => {
 
           {/* Alertas de Validação */}
           {Object.keys(alertas).length > 0 && (
-            <div className="border border-destructive rounded-lg p-4 bg-destructive/5 print:hidden">
-              <div className="flex items-center space-x-2 mb-3">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <Label className="text-lg font-semibold text-destructive">Alertas de Validação</Label>
-              </div>
-              <div className="space-y-2">
+            <div className="border border-destructive rounded-lg p-2 sm:p-4 bg-destructive/5 print:hidden">
+            <div className="flex items-center space-x-1 sm:space-x-2 mb-2 sm:mb-3">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
+              <Label className="text-sm sm:text-lg font-semibold text-destructive">Alertas</Label>
+            </div>
+            <div className="space-y-1 sm:space-y-2">
                 {Object.entries(alertas).map(([key, mensagem]) => {
                   const isError = mensagem.includes('ERRO');
                   return (
-                    <div key={key} className={`p-3 rounded border ${
-                      isError 
-                        ? 'border-destructive bg-destructive/10 text-destructive' 
+                    <div key={key} className={`p-2 sm:p-3 rounded border text-xs sm:text-sm ${
+                      isError
+                        ? 'border-destructive bg-destructive/10 text-destructive'
                         : 'border-orange-400 bg-orange-50 text-orange-700'
                     }`}>
-                      <div className="flex items-center space-x-2">
-                        <AlertTriangle className={`h-4 w-4 ${isError ? 'text-destructive' : 'text-orange-500'}`} />
-                        <span className="text-sm font-medium">{mensagem}</span>
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <AlertTriangle className={`h-3 w-3 sm:h-4 sm:w-4 ${isError ? 'text-destructive' : 'text-orange-500'}`} />
+                        <span className="font-medium">{mensagem}</span>
                       </div>
                     </div>
                   );
@@ -1782,13 +1782,13 @@ const FichaNegociacao = () => {
                                  }`}
                                />
                                {maxParcelas && (info.tipo === 'Sinal' || info.tipo === 'Saldo') && (
-                                 <div className="text-xs text-muted-foreground">
-                                   Máx: {maxParcelas} parcelas
-                                 </div>
+                                 <div className="text-xs text-muted-foreground hidden sm:block">
+                                 Máx: {maxParcelas}
+                               </div>
                                )}
                                {info.tipo === 'Restante da Entrada' && (
-                                 <div className="text-xs text-muted-foreground">
-                                   Máx: 5 parcelas
+                                 <div className="text-xs text-muted-foreground hidden sm:block">
+                                   Máx: 5
                                  </div>
                                )}
                                {maxParcelas && parseInt(info.qtdParcelas) > maxParcelas && (
@@ -1869,13 +1869,13 @@ const FichaNegociacao = () => {
                            }`}
                          />
                          {(info.tipo === 'Sinal' || info.tipo === 'Saldo') && (
-                           <div className="text-xs text-muted-foreground mt-1">
-                             Apenas dias 05 ou 15
+                           <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                             Dias 05/15
                            </div>
                          )}
                          {info.tipo === 'Restante da Entrada' && (
-                           <div className="text-xs text-blue-600 mt-1">
-                             Atualiza automaticamente Sinal e Saldo
+                           <div className="text-xs text-blue-600 mt-1 hidden sm:block">
+                             Auto-atualiza
                            </div>
                          )}
                        </td>
