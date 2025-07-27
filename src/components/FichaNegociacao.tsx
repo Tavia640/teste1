@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { PDFGenerator, DadosCliente, DadosNegociacao } from '@/lib/pdfGenerator';
 import { EmailService } from '@/lib/emailService';
+import { EmailServiceDirect } from '@/lib/emailServiceDirect';
 
 // Formatação monetária simples para exibição
 const exibirValor = (valor: string): string => {
@@ -384,7 +385,7 @@ const FichaNegociacao = () => {
       window.location.reload();
 
     } catch (error) {
-      console.error('💥 Erro ao criar dados iniciais:', error);
+      console.error('��� Erro ao criar dados iniciais:', error);
       // Fallback para dados vazios
       setEmpreendimentos([]);
       setCategoriasPreco([]);
