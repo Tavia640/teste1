@@ -1235,7 +1235,7 @@ const FichaNegociacao = () => {
           <div>
             <Label className="text-base font-semibold">TIPO DE VENDA: *</Label>
             <RadioGroup value={tipoVenda} onValueChange={setTipoVenda} className="mt-2">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="semestral" id="semestral" />
                   <Label htmlFor="semestral">Semestral</Label>
