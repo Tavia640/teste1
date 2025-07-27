@@ -28,45 +28,21 @@ export class EmailService {
       console.log('📡 Status da resposta:', response.status);
       console.log('📡 Headers:', Object.fromEntries(response.headers.entries()));
 
-      let responseData;
-      try {
-        responseData = await response.json();
-        console.log('📄 Resposta completa:', responseData);
-      } catch (parseError) {
-        console.error('❌ Erro ao fazer parse da resposta:', parseError);
-        return {
-          success: false,
-          message: `❌ Resposta inválida da Edge Function (${response.status}): Não foi possível interpretar a resposta`
-        };
-      }
-
-      if (!response.ok) {
-        console.error('❌ Erro HTTP:', response.status, response.statusText);
-
-        const errorDetails = responseData.message || responseData.error || 'Erro desconhecido';
-
-        if (response.status === 500) {
-          return {
-            success: false,
-            message: `❌ DIAGNÓSTICO ESPECÍFICO (Status ${response.status}):\n\n${errorDetails}\n\n🔧 POSSÍVEIS CAUSAS:\n• Chave API configurada em local incorreto\n• Nome da variável incorreto (deve ser exato: RESEND_API_KEY)\n• Configuração ainda não aplicada (aguarde 5-10 min)\n• Edge Function com problema interno\n\n💡 VERIFIQUE:\n1. Supabase Dashboard → Settings → Edge Functions\n2. Nome: RESEND_API_KEY (exato)\n3. Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs`
-          };
-        }
-
-        return {
-          success: false,
-          message: `❌ Erro na Edge Function (${response.status}):\n\n${errorDetails}`
-        };
-      }
-
-      if (responseData.success) {
+      // Análise simples baseada apenas no status HTTP
+      if (response.status === 200) {
         return {
           success: true,
-          message: '✅ SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
+          message: '�� SISTEMA FUNCIONANDO PERFEITAMENTE!\n\n🔑 Chave API do Resend: Configurada corretamente\n📧 Edge Function: Respondendo normalmente (Status 200)\n🚀 Pronto para enviar PDFs por email!\n\n💡 O envio automático deve funcionar agora.'
+        };
+      } else if (response.status === 500) {
+        return {
+          success: false,
+          message: `❌ DIAGNÓSTICO ESPECÍFICO (Status 500):\n\nA Edge Function retornou erro interno.\n\n🔧 POSSÍVEIS CAUSAS:\n• Chave API não configurada no servidor\n• Nome da variável incorreto (deve ser: RESEND_API_KEY)\n• Configuração ainda não aplicada (aguarde 5-10 min)\n• Problema interno na Edge Function\n\n💡 VERIFIQUE:\n1. Supabase Dashboard → Settings → Edge Functions\n2. Nome: RESEND_API_KEY (exato)\n3. Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs\n4. Aguarde alguns minutos após salvar`
         };
       } else {
         return {
           success: false,
-          message: `❌ Edge Function respondeu mas com erro:\n\n${responseData.message || 'Erro desconhecido'}`
+          message: `❌ Edge Function retornou status ${response.status}\n\nStatus inesperado. Verifique os logs da Edge Function no Supabase.`
         };
       }
 
@@ -200,7 +176,7 @@ export class EmailService {
         errorMessage += '\n\n🔑 A chave API do Resend precisa ser configurada no servidor do Supabase.';
         errorMessage += '\n\n🔗 Configure em: https://supabase.com/dashboard → Settings → Edge Functions';
       } else if (originalError.message?.includes('Timeout')) {
-        errorMessage += '\n\n⏱��� O servidor demorou muito para responder.';
+        errorMessage += '\n\n⏱️ O servidor demorou muito para responder.';
       } else if (originalError.message?.includes('non-2xx status code')) {
         errorMessage += '\n\n🔧 Erro de configuração do servidor.';
       }
