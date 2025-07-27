@@ -134,20 +134,29 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // TESTE DE CONECTIVIDADE - Primeira prioridade
+    // TESTE DE CONECTIVIDADE - Primeira prioridade (ANTES de qualquer validação)
     console.log("🔍 Verificando se é teste:", {
       temTest: 'test' in requestData,
       valorTest: requestData.test,
       tipoTest: typeof requestData.test,
-      isTrue: requestData.test === true
+      isTrue: requestData.test === true,
+      requestDataKeys: Object.keys(requestData)
     });
 
-    if (requestData && requestData.test === true) {
+    // Verificar múltiplas formas de detectar teste
+    const isTest = requestData && (
+      requestData.test === true ||
+      requestData.test === "true" ||
+      requestData.test === 1 ||
+      Object.keys(requestData).length === 1 && 'test' in requestData
+    );
+
+    if (isTest) {
       console.log("🧪 TESTE DE CONECTIVIDADE DETECTADO");
 
       const testResponse: EmailResponse = {
         success: true,
-        message: "✅ Sistema de email funcionando!\n\n🔑 API Key do Resend configurada\n📧 Pronto para enviar emails",
+        message: "✅ Sistema de email funcionando!\n\n🔑 API Key do Resend configurada corretamente\n📧 Edge Function respondendo normalmente\n🚀 Pronto para enviar emails",
         timestamp: new Date().toISOString()
       };
 
@@ -163,11 +172,12 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Se chegou aqui, é um envio real de email
     console.log("📧 Processando envio real de email...");
-    
+
     const { clientData, fichaData, pdfData1, pdfData2 } = requestData as SendPDFRequest;
 
     // Validação dos dados para envio real
     if (!clientData) {
+      console.error("❌ Dados do cliente ausentes para envio real");
       throw new Error("Dados do cliente são obrigatórios");
     }
     
