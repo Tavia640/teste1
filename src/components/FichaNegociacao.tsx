@@ -385,7 +385,7 @@ const FichaNegociacao = () => {
       window.location.reload();
 
     } catch (error) {
-      console.error('��� Erro ao criar dados iniciais:', error);
+      console.error('💥 Erro ao criar dados iniciais:', error);
       // Fallback para dados vazios
       setEmpreendimentos([]);
       setCategoriasPreco([]);
@@ -2005,6 +2005,38 @@ const FichaNegociacao = () => {
                 <circle cx="12" cy="12" r="10"/>
               </svg>
               Testar
+            </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('⚡ TESTE RÁPIDO - Edge Function...');
+                  const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
+                      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ'
+                    },
+                    body: JSON.stringify({ test: true, quick: true })
+                  });
+
+                  console.log('📡 Status:', response.status);
+                  const text = await response.text();
+                  console.log('📄 Resposta:', text);
+
+                  if (response.status === 200) {
+                    alert(`✅ EDGE FUNCTION OK!\n\nStatus: ${response.status}\nResposta: ${text.substring(0, 200)}`);
+                  } else {
+                    alert(`❌ Edge Function problema\n\nStatus: ${response.status}\nResposta: ${text.substring(0, 200)}`);
+                  }
+                } catch (error: any) {
+                  alert(`❌ Erro no teste rápido: ${error.message}`);
+                }
+              }}
+              variant="secondary"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
+            >
+              ⚡ Teste Rápido
             </Button>
             <Button
               onClick={salvarFicha}
