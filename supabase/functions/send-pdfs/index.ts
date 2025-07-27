@@ -134,25 +134,15 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    // TESTE DE CONECTIVIDADE - Primeira prioridade (ANTES de qualquer validação)
-    console.log("🔍 Verificando se é teste:", {
-      temTest: 'test' in requestData,
-      valorTest: requestData.test,
-      tipoTest: typeof requestData.test,
-      isTrue: requestData.test === true,
-      requestDataKeys: Object.keys(requestData)
-    });
+    // TESTE DE CONECTIVIDADE - Verificação SIMPLES
+    console.log("🔍 DADOS RECEBIDOS COMPLETOS:", JSON.stringify(requestData, null, 2));
+    console.log("🔍 Verificando campo 'test':", requestData.test);
+    console.log("🔍 Tipo do campo 'test':", typeof requestData.test);
+    console.log("🔍 Tem campo 'test'?", 'test' in requestData);
 
-    // Verificar múltiplas formas de detectar teste
-    const isTest = requestData && (
-      requestData.test === true ||
-      requestData.test === "true" ||
-      requestData.test === 1 ||
-      Object.keys(requestData).length === 1 && 'test' in requestData
-    );
-
-    if (isTest) {
-      console.log("🧪 TESTE DE CONECTIVIDADE DETECTADO");
+    // Detecção SUPER SIMPLES - se tem campo 'test', é teste
+    if ('test' in requestData) {
+      console.log("🧪 TESTE DETECTADO! Retornando sucesso...");
 
       const testResponse: EmailResponse = {
         success: true,
@@ -160,7 +150,7 @@ const handler = async (req: Request): Promise<Response> => {
         timestamp: new Date().toISOString()
       };
 
-      console.log("✅ Retornando resposta de teste bem-sucedida");
+      console.log("✅ Resposta de teste:", JSON.stringify(testResponse, null, 2));
       return new Response(JSON.stringify(testResponse), {
         status: 200,
         headers: {
