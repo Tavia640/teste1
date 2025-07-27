@@ -84,7 +84,7 @@ export class EmailService {
       this.validarPayload(payload);
 
       // Invocar edge function com timeout
-      console.log('🔄 Invocando edge function do Supabase...');
+      console.log('�� Invocando edge function do Supabase...');
       const response = await Promise.race([
         supabase.functions.invoke('send-pdfs', { body: payload }),
         new Promise((_, reject) => 
@@ -109,22 +109,29 @@ export class EmailService {
         let errorMessage = 'Erro desconhecido no servidor de email';
 
         if (response.error.message?.includes('Edge Function returned a non-2xx status code')) {
+          console.log('🔍 Debug completo da resposta:', {
+            data: response.data,
+            dataType: typeof response.data,
+            dataString: JSON.stringify(response.data),
+            status: response.status,
+            hasError: !!response.error
+          });
+
           // Se temos dados de erro na resposta, usar essa informação
           if (response.data && typeof response.data === 'object') {
             console.error('📋 Detalhes do erro do servidor:', response.data);
             errorMessage = response.data.error || response.data.message || 'Erro interno do servidor';
+          } else if (response.data && typeof response.data === 'string') {
+            console.error('📋 Resposta string do servidor:', response.data);
+            errorMessage = response.data;
           } else {
             // Erro 500 geralmente indica problema de configuração
-            errorMessage = '🔧 Problema de configuração detectado!\n\n' +
-                          '🔑 A chave API do Resend não está configurada no servidor.\n\n' +
-                          '💡 SOLUÇÃO:\n' +
-                          '1. Acesse: https://supabase.com/dashboard\n' +
-                          '2. Selecione seu projeto: msxhwlwxpvrtmyngwwcp\n' +
-                          '3. Vá em Settings → Edge Functions\n' +
-                          '4. Adicione a variável:\n' +
-                          '   • Nome: RESEND_API_KEY\n' +
-                          '   • Valor: re_SmQE7h9x_8gJ7nxVBZiv81R4YWEamyVTs\n\n' +
-                          '⏰ Aguarde alguns minutos após salvar para aplicar.';
+            errorMessage = '🔧 Edge Function falhou!\n\n' +
+                          '🔄 Tentando reinicializar conexão...\n\n' +
+                          '⚠️ Se o problema persistir:\n' +
+                          '1. A chave API pode não estar aplicada ainda\n' +
+                          '2. Aguarde alguns minutos e tente novamente\n' +
+                          '3. Verifique se a Edge Function foi deployada corretamente';
           }
         } else {
           errorMessage = response.error.message || 'Erro na comunicação com o servidor';
