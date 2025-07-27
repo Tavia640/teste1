@@ -1174,7 +1174,7 @@ const FichaNegociacao = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Alerta do Modo Offline */}
       {offlineMode && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
