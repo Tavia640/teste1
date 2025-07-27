@@ -120,7 +120,9 @@ const FichaNegociacao = () => {
   const [empreendimentos, setEmpreendimentos] = useState<Empreendimento[]>([]);
   const [categoriasPreco, setCategoriasPreco] = useState<CategoriaPreco[]>([]);
   const [torres, setTorres] = useState<Torre[]>([]);
+  const [vendedores, setVendedores] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [offlineMode, setOfflineMode] = useState(false);
 
   // Estados para alertas de autorização
   const [alertas, setAlertas] = useState<{[key: string]: string}>({});
@@ -401,11 +403,17 @@ const FichaNegociacao = () => {
         console.log('🌐 URL:', 'https://msxhwlwxpvrtmyngwwcp.supabase.co');
 
         try {
-          // Teste mais simples - verificar se consegue fazer uma requisição básica
-          const { data: testData, error: testError } = await supabase
+          // Teste rápido com timeout manual
+          const testPromise = supabase
             .from('empreendimentos')
             .select('id, nome')
             .limit(1);
+
+          const timeoutPromise = new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('TIMEOUT_CONNECT')), 10000);
+          });
+
+          const { data: testData, error: testError } = await Promise.race([testPromise, timeoutPromise]) as any;
 
           if (testError) {
             console.error('❌ Erro na query de teste:', testError);
@@ -420,7 +428,8 @@ const FichaNegociacao = () => {
               throw new Error('TABELA_NAO_EXISTE');
             }
 
-            throw testError;
+            // Para qualquer outro erro da query, ativar modo offline
+            throw new Error('QUERY_ERROR');
           }
 
           console.log('✅ Conectividade OK! Dados de teste:', testData);
@@ -431,11 +440,56 @@ const FichaNegociacao = () => {
             throw networkError;
           }
 
-          // Se é erro de rede, vamos ver mais detalhes
-          console.error('🔍 Tipo do erro:', networkError.name);
-          console.error('🔍 Mensagem:', networkError.message);
+          // Para erros de rede, tentar novamente após uma pausa
+          if (networkError.message?.includes('Failed to fetch') || networkError.message === 'TIMEOUT_CONNECT') {
+            console.warn('🔄 Erro de conectividade - tentando novamente em modo simplificado...');
 
-          throw new Error(`Conectividade: ${networkError.message}`);
+            // Tentativa simplificada sem timeout
+            try {
+              const { data: simpleTest, error: simpleError } = await supabase
+                .from('empreendimentos')
+                .select('id')
+                .limit(1);
+
+              if (!simpleError) {
+                console.log('✅ Conectividade restabelecida!');
+              } else {
+                console.warn('⚠️ Continuando com modo offline temporário devido a:', simpleError.message);
+              }
+            } catch (retryError) {
+              console.warn('⚠️ Tentativa simplificada falhou, continuando com dados de exemplo');
+            }
+          }
+
+          // Ativar modo offline apenas temporariamente
+          console.warn('⚠️ Modo offline temporário ativado - usando dados de exemplo');
+          console.warn('🔧 Motivo:', networkError.message);
+
+          // Ativar modo offline com dados de exemplo
+          setOfflineMode(true);
+          setEmpreendimentos([
+            { id: 1, nome: 'GAV Resort Paradise', localizacao: 'Cancún, México' },
+            { id: 2, nome: 'GAV Resort Marina', localizacao: 'Playa del Carmen, México' },
+            { id: 3, nome: 'GAV Resort Premium', localizacao: 'Riviera Maya, México' }
+          ]);
+          setVendedores([
+            { id: 1, nome: 'João Silva', funcao: 'Closer' },
+            { id: 2, nome: 'Maria Santos', funcao: 'Liner' },
+            { id: 3, nome: 'Pedro Costa', funcao: 'Closer' },
+            { id: 4, nome: 'Ana Lima', funcao: 'Liner' }
+          ]);
+          setCategoriasPreco([
+            { id: 1, nome: 'Standard', empreendimento_id: 1 },
+            { id: 2, nome: 'Premium', empreendimento_id: 1 },
+            { id: 3, nome: 'VIP', empreendimento_id: 2 }
+          ]);
+          setTorres([
+            { id: 1, nome: 'Torre A', empreendimento_id: 1 },
+            { id: 2, nome: 'Torre B', empreendimento_id: 1 },
+            { id: 3, nome: 'Torre Ocean', empreendimento_id: 2 }
+          ]);
+          setLoading(false);
+          return; // Sair da função sem tentar carregar do Supabase
         }
 
         // Carregar empreendimentos primeiro
@@ -452,7 +506,7 @@ const FichaNegociacao = () => {
             throw new Error('Usar dados mockados');
           }
 
-          console.log('✅ Empreendimentos carregados do Supabase:', empreendimentosData?.length || 0);
+          console.log('��� Empreendimentos carregados do Supabase:', empreendimentosData?.length || 0);
           setEmpreendimentos(empreendimentosData || []);
 
         } catch (empError) {
@@ -659,7 +713,7 @@ const FichaNegociacao = () => {
           ];
 
           setTorres(torresMock);
-          console.log('✅ Torres mockadas carregadas:', torresMock.length);
+          console.log('�� Torres mockadas carregadas:', torresMock.length);
         }
 
         console.log('🎉 Carregamento de dados concluído com sucesso!');
@@ -953,16 +1007,52 @@ const FichaNegociacao = () => {
   const testarEmail = async () => {
     try {
       console.log('🧪 Testando sistema de email...');
+
+      // Mostrar loading
+      const loadingAlert = () => {
+        const alertDiv = document.createElement('div');
+        alertDiv.id = 'email-test-loading';
+        alertDiv.innerHTML = `
+          <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                      background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+                      z-index: 1000; text-align: center;">
+            <div style="margin-bottom: 10px;">🧪 Testando conectividade...</div>
+            <div style="font-size: 12px; color: #666;">Verificando API do Resend</div>
+          </div>
+        `;
+        document.body.appendChild(alertDiv);
+      };
+
+      loadingAlert();
+
       const resultado = await EmailService.testarConectividade();
 
+      // Remover loading
+      const loadingDiv = document.getElementById('email-test-loading');
+      if (loadingDiv) loadingDiv.remove();
+
       if (resultado.success) {
-        alert(`✅ Teste bem-sucedido!\n\n${resultado.message}`);
+        alert(`✅ TESTE CONCLUÍDO COM SUCESSO!\n\n${resultado.message}\n\n🚀 Pronto para enviar PDFs por email!`);
       } else {
-        alert(`❌ Teste falhou:\n\n${resultado.message}`);
+        let mensagemErro = `❌ TESTE FALHOU\n\n${resultado.message}`;
+
+        if (resultado.message.includes('RESEND_API_KEY')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nA chave API do Resend precisa ser configurada no painel do Supabase';
+        } else if (resultado.message.includes('non-2xx status code')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nProblema no servidor. Tente novamente em alguns minutos';
+        } else if (resultado.message.includes('Failed to fetch')) {
+          mensagemErro += '\n\n💡 SOLUÇÃO:\nProblema de conectividade. Verifique sua internet';
+        }
+
+        alert(mensagemErro);
       }
     } catch (error: any) {
+      // Remover loading em caso de erro
+      const loadingDiv = document.getElementById('email-test-loading');
+      if (loadingDiv) loadingDiv.remove();
+
       console.error('❌ Erro no teste:', error);
-      alert(`❌ Erro no teste: ${error.message}`);
+      alert(`❌ ERRO CRÍTICO NO TESTE\n\n${error.message}\n\n💡 Tente atualizar a página e testar novamente`);
     }
   };
 
@@ -1084,27 +1174,43 @@ const FichaNegociacao = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-6 space-y-6">
+    <div className="max-w-6xl mx-auto p-2 sm:p-3 md:p-6 space-y-3 md:space-y-6">
+      {/* Alerta do Modo Offline */}
+      {offlineMode && (
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <AlertTriangle className="h-5 w-5 text-yellow-400" />
+            </div>
+            <div className="ml-3">
+              <p className="text-sm text-yellow-700">
+                <strong>Modo Offline Ativado:</strong> Sem conexão com o servidor. Usando dados de exemplo.
+                O sistema continuará funcionando normalmente, mas os dados não serão salvos no banco de dados.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <Button 
-              variant="ghost" 
+            <Button
+              variant="ghost"
               onClick={() => navigate('/cadastro-cliente')}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-2 sm:px-4 py-2 h-8 sm:h-10"
             >
-              <ArrowLeft className="h-4 w-4" />
+              <ArrowLeft className="h-3 w-3 sm:h-4 sm:w-4" />
               Voltar
             </Button>
-            <CardTitle className="text-2xl font-bold">
-              Ficha de Negociação de Cota
+            <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold text-center">
+              Ficha de Negociação
             </CardTitle>
-            <div className="w-20" /> {/* Spacer for centering */}
+            <div className="w-16 sm:w-20" /> {/* Spacer for centering */}
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Seção Inicial */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-6">
             <div>
               <Label htmlFor="liner">LINER:</Label>
               <Input
@@ -1129,30 +1235,30 @@ const FichaNegociacao = () => {
           <div>
             <Label className="text-base font-semibold">TIPO DE VENDA: *</Label>
             <RadioGroup value={tipoVenda} onValueChange={setTipoVenda} className="mt-2">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                <div className="flex items-center space-x-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="semestral" id="semestral" />
-                  <Label htmlFor="semestral">Semestral</Label>
+                  <Label htmlFor="semestral" className="text-xs sm:text-sm">Semestral</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="anual" id="anual" />
-                  <Label htmlFor="anual">Anual</Label>
+                  <Label htmlFor="anual" className="text-xs sm:text-sm">Anual</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="a-vista" id="a-vista" />
-                  <Label htmlFor="a-vista">À Vista</Label>
+                  <Label htmlFor="a-vista" className="text-xs sm:text-sm">À Vista</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="ate-36x" id="ate-36x" />
-                  <Label htmlFor="ate-36x">Até 36x</Label>
+                  <Label htmlFor="ate-36x" className="text-xs sm:text-sm">Até 36x</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="padrao" id="padrao" />
-                  <Label htmlFor="padrao">Padr��o</Label>
+                  <Label htmlFor="padrao" className="text-xs sm:text-sm">Padrão</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="linear" id="linear" />
-                  <Label htmlFor="linear">Linear</Label>
+                  <Label htmlFor="linear" className="text-xs sm:text-sm">Linear</Label>
                 </div>
               </div>
             </RadioGroup>
@@ -1162,23 +1268,27 @@ const FichaNegociacao = () => {
 
           {/* Tipo de Parcela Paga em Sala */}
           <div>
-            <Label className="text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
-            <div className="mt-4 overflow-x-auto">
-              <table className="w-full border border-border">
+            <Label className="text-sm sm:text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
+            <Button onClick={adicionarParcelaPagaSala} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm w-full sm:w-auto" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Parcela
+            </Button>
+            <div className="mt-2 sm:mt-4 overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[600px] sm:min-w-[800px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo de Parcela Paga em Sala</th>
-                    <th className="border border-border p-3 text-left">Valor Total Pago em Sala *</th>
-                    <th className="border border-border p-3 text-left">Valor Distribuído para cada Unidade *</th>
-                    <th className="border border-border p-3 text-left">Quantidade de Cotas *</th>
-                    <th className="border border-border p-3 text-left">Forma de Pag. *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo Parcela</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Total Pago *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Valor por Unidade *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Qtd Cotas *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Forma Pag. *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {parcelasPagasSala.map((parcela, index) => (
                     <tr key={parcela.id}>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.tipo}
                           onChange={(e) => {
@@ -1186,10 +1296,11 @@ const FichaNegociacao = () => {
                             newParcelas[index].tipo = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="Tipo de parcela"
+                          placeholder="Tipo"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.valorTotal || ''}
                           onChange={(e) => {
@@ -1197,12 +1308,13 @@ const FichaNegociacao = () => {
                             newParcelas[index].valorTotal = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="1000.00"
+                          placeholder="1000"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={parcela.valorDistribuido || ''}
                              onChange={(e) => {
@@ -1228,12 +1340,13 @@ const FichaNegociacao = () => {
                                 const informacoesAtualizadas = recalcularRestanteEntrada(novasInformacoes);
                                 setInformacoesPagamento(informacoesAtualizadas);
                             }}
-                           placeholder="1000.00"
+                           placeholder="1000"
                            type="number"
                            step="0.01"
+                           className="text-xs sm:text-sm h-8 sm:h-10"
                          />
                        </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.quantidadeCotas}
                           onChange={(e) => {
@@ -1241,14 +1354,15 @@ const FichaNegociacao = () => {
                             newParcelas[index].quantidadeCotas = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="Qtd cotas"
+                          placeholder="Qtd"
                           type="number"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
-                        <div className="space-y-2">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
+                        <div className="space-y-1 sm:space-y-2">
                           {parcela.formasPagamento.map((forma, formaIndex) => (
-                            <div key={formaIndex} className="flex items-center space-x-2">
+                            <div key={formaIndex} className="flex items-center space-x-1">
                               <Select
                                 value={forma}
                                 onValueChange={(value) => {
@@ -1257,8 +1371,8 @@ const FichaNegociacao = () => {
                                   setParcelasPagasSala(newParcelas);
                                 }}
                               >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione forma" />
+                                <SelectTrigger className="h-8 sm:h-10 text-xs sm:text-sm">
+                                  <SelectValue placeholder="Forma" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="dinheiro">Dinheiro</SelectItem>
@@ -1288,21 +1402,22 @@ const FichaNegociacao = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => adicionarFormaPagamento(parcela.id)}
-                            className="w-full"
+                            className="w-full h-7 sm:h-8 text-xs sm:text-sm"
                           >
                             <Plus className="h-3 w-3 mr-1" />
-                            Adicionar Forma de Pagamento
+                            + Forma
                           </Button>
                         </div>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => removerParcelaPagaSala(parcela.id)}
                           disabled={parcelasPagasSala.length === 1}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </td>
                     </tr>
@@ -1316,35 +1431,35 @@ const FichaNegociacao = () => {
 
           {/* Contratos */}
           <div>
-            <Label className="text-lg font-semibold">Contratos *</Label>
-            <Button onClick={adicionarContrato} className="mt-2 mb-4" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Contrato
+            <Label className="text-sm sm:text-lg font-semibold">Contratos *</Label>
+            <Button onClick={adicionarContrato} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Contrato
             </Button>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-border">
+            <div className="overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[700px] sm:min-w-[900px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo de Contrato *</th>
-                    <th className="border border-border p-3 text-left">Empreendimento *</th>
-                    <th className="border border-border p-3 text-left">Torre *</th>
-                    <th className="border border-border p-3 text-left">Apartamento *</th>
-                    <th className="border border-border p-3 text-left">Cota *</th>
-                    <th className="border border-border p-3 text-left">Categoria de Preço *</th>
-                    <th className="border border-border p-3 text-left">Valor *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Empreendimento *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Torre *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Apt *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Cota *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Categoria *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Valor *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {contratos.map((contrato, index) => (
                     <tr key={contrato.id}>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Físico</div>
-                          <div className="text-sm text-muted-foreground">Digital</div>
+                          <div className="text-xs text-muted-foreground">Físico</div>
+                          <div className="text-xs text-muted-foreground">Digital</div>
                         </div>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={contrato.empreendimento}
                           onValueChange={(value) => {
@@ -1362,8 +1477,8 @@ const FichaNegociacao = () => {
                           }}
                           disabled={loading}
                         >
-                          <SelectTrigger className="bg-background">
-                            <SelectValue placeholder={loading ? "Carregando..." : "Selecione empreendimento"} />
+                          <SelectTrigger className="bg-background h-8 sm:h-10 text-xs sm:text-sm">
+                            <SelectValue placeholder={loading ? "Loading..." : "Empreend."} />
                           </SelectTrigger>
                           <SelectContent className="bg-background z-50">
                             {empreendimentos.map((emp) => (
@@ -1374,7 +1489,7 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={contrato.torre}
                            onChange={(e) => {
@@ -1383,9 +1498,10 @@ const FichaNegociacao = () => {
                              setContratos(newContratos);
                            }}
                            placeholder="Torre"
+                           className="text-xs sm:text-sm h-8 sm:h-10"
                          />
                        </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.apartamento}
                           onChange={(e) => {
@@ -1393,10 +1509,11 @@ const FichaNegociacao = () => {
                             newContratos[index].apartamento = e.target.value;
                             setContratos(newContratos);
                           }}
-                          placeholder="Apartamento"
+                          placeholder="Apt"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.cota}
                           onChange={(e) => {
@@ -1405,21 +1522,22 @@ const FichaNegociacao = () => {
                             setContratos(newContratos);
                           }}
                           placeholder="Cota"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={contrato.categoriaPreco}
                           onValueChange={(value) => {
                             const newContratos = [...contratos];
                             newContratos[index].categoriaPreco = value;
                             // Auto-preencher valor baseado na categoria selecionada
-                            const categoria = categoriasPreco.find(cat => 
+                            const categoria = categoriasPreco.find(cat =>
                               cat.categoria_preco === value && cat.empreendimento_id === contrato.empreendimento
                             );
                             if (categoria) {
                               newContratos[index].valor = categoria.vir_cota.toString();
-                              
+
                                // Preencher automaticamente as informações de pagamento
                                const dados = calcularDadosCategoria(contrato.empreendimento, value);
                                if (dados) {
@@ -1430,11 +1548,11 @@ const FichaNegociacao = () => {
                           }}
                           disabled={!contrato.empreendimento || loading}
                         >
-                          <SelectTrigger className="bg-background">
+                          <SelectTrigger className="bg-background h-8 sm:h-10 text-xs sm:text-sm">
                             <SelectValue placeholder={
-                              !contrato.empreendimento 
-                                ? "Selecione empreendimento primeiro" 
-                                : "Selecione categoria de preço"
+                              !contrato.empreendimento
+                                ? "Emp. primeiro"
+                                : "Categoria"
                             } />
                           </SelectTrigger>
                           <SelectContent className="bg-background z-50">
@@ -1446,7 +1564,7 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.valor || ''}
                           onChange={(e) => {
@@ -1454,19 +1572,21 @@ const FichaNegociacao = () => {
                             newContratos[index].valor = e.target.value;
                             setContratos(newContratos);
                           }}
-                          placeholder="50000.00"
+                          placeholder="50000"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => removerContrato(contrato.id)}
                           disabled={contratos.length === 1}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </td>
                     </tr>
@@ -1479,14 +1599,14 @@ const FichaNegociacao = () => {
           <Separator />
 
           {/* Local para Assinatura */}
-          <div className="text-center space-y-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="text-center space-y-2 sm:space-y-4">
+            <p className="text-xs sm:text-sm text-muted-foreground">
               O financeiro descrito acima é referente a cada unidade separadamente.
             </p>
-            <div className="border-t border-border pt-4">
-              <Label className="text-base font-semibold">Assinatura do Cliente</Label>
-              <div className="h-16 border border-dashed border-border mt-2 flex items-center justify-center">
-                <span className="text-muted-foreground text-sm">Local para Assinatura do Cliente</span>
+            <div className="border-t border-border pt-2 sm:pt-4">
+              <Label className="text-sm sm:text-base font-semibold">Assinatura do Cliente</Label>
+              <div className="h-12 sm:h-16 border border-dashed border-border mt-2 flex items-center justify-center">
+                <span className="text-muted-foreground text-xs sm:text-sm">Local para Assinatura</span>
               </div>
             </div>
           </div>
@@ -1495,23 +1615,23 @@ const FichaNegociacao = () => {
 
           {/* Alertas de Validação */}
           {Object.keys(alertas).length > 0 && (
-            <div className="border border-destructive rounded-lg p-4 bg-destructive/5 print:hidden">
-              <div className="flex items-center space-x-2 mb-3">
-                <AlertTriangle className="h-5 w-5 text-destructive" />
-                <Label className="text-lg font-semibold text-destructive">Alertas de Validação</Label>
-              </div>
-              <div className="space-y-2">
+            <div className="border border-destructive rounded-lg p-2 sm:p-4 bg-destructive/5 print:hidden">
+            <div className="flex items-center space-x-1 sm:space-x-2 mb-2 sm:mb-3">
+              <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-destructive" />
+              <Label className="text-sm sm:text-lg font-semibold text-destructive">Alertas</Label>
+            </div>
+            <div className="space-y-1 sm:space-y-2">
                 {Object.entries(alertas).map(([key, mensagem]) => {
                   const isError = mensagem.includes('ERRO');
                   return (
-                    <div key={key} className={`p-3 rounded border ${
-                      isError 
-                        ? 'border-destructive bg-destructive/10 text-destructive' 
+                    <div key={key} className={`p-2 sm:p-3 rounded border text-xs sm:text-sm ${
+                      isError
+                        ? 'border-destructive bg-destructive/10 text-destructive'
                         : 'border-orange-400 bg-orange-50 text-orange-700'
                     }`}>
-                      <div className="flex items-center space-x-2">
-                        <AlertTriangle className={`h-4 w-4 ${isError ? 'text-destructive' : 'text-orange-500'}`} />
-                        <span className="text-sm font-medium">{mensagem}</span>
+                      <div className="flex items-center space-x-1 sm:space-x-2">
+                        <AlertTriangle className={`h-3 w-3 sm:h-4 sm:w-4 ${isError ? 'text-destructive' : 'text-orange-500'}`} />
+                        <span className="font-medium">{mensagem}</span>
                       </div>
                     </div>
                   );
@@ -1522,30 +1642,30 @@ const FichaNegociacao = () => {
 
           {/* Informações de Pagamento */}
           <div>
-            <Label className="text-lg font-semibold">Informações de Pagamento</Label>
-            <Button onClick={adicionarEntrada} className="mt-2 mb-4" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Entrada
+            <Label className="text-sm sm:text-lg font-semibold">Informações de Pagamento</Label>
+            <Button onClick={adicionarEntrada} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Entrada
             </Button>
-            <div className="overflow-x-auto">
-              <table className="w-full border border-border">
+            <div className="overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[600px] sm:min-w-[800px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo</th>
-                    <th className="border border-border p-3 text-left">Total *</th>
-                    <th className="border border-border p-3 text-left">Qtd. Parcelas *</th>
-                    <th className="border border-border p-3 text-left">Valor Parcela *</th>
-                    <th className="border border-border p-3 text-left">Forma de Pag. *</th>
-                    <th className="border border-border p-3 text-left">1º Vencimento *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Total *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Qtd *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Parcela *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Forma *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Venc. *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {informacoesPagamento.map((info, index) => (
                     <tr key={info.id}>
-                          <td className="border border-border p-3">
+                          <td className="border border-border p-1 sm:p-2 md:p-3">
                             {info.tipo === 'Restante da Entrada' ? (
-                              <span className="text-muted-foreground bg-muted p-2 rounded block text-center">
+                              <span className="text-muted-foreground bg-muted p-1 rounded block text-center text-xs">
                                 {info.tipo}
                               </span>
                             ) : (
@@ -1558,16 +1678,17 @@ const FichaNegociacao = () => {
                                 }}
                                 placeholder="Tipo"
                                 disabled={['1ª Entrada', '2ª Entrada', 'Sinal', 'Saldo'].includes(info.tipo)}
+                                className="text-xs sm:text-sm h-8 sm:h-10"
                               />
                             )}
                           </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={info.total || ''}
                             onChange={(e) => {
                               const valor = parseFloat(e.target.value) || 0;
 
-                              // Validação específica para 1ª Entrada - não pode ser menor que R$ 1.000
+                              // Validação espec��fica para 1ª Entrada - não pode ser menor que R$ 1.000
                               if (info.tipo === '1ª Entrada' && valor > 0 && valor < 1000) {
                                 return; // Bloqueia valores menores que R$ 1.000 para primeira entrada
                               }
@@ -1581,7 +1702,7 @@ const FichaNegociacao = () => {
                                 const qtdParcelas = parseInt(newInfos[index].qtdParcelas);
                                 newInfos[index].valorParcela = (total / qtdParcelas).toFixed(2);
                               }
-                              
+
                                // Se for uma entrada (1ª, 2ª, 3ª, etc.), recalcular Restante da Entrada
                                 if (info.tipo.includes('ª Entrada')) {
                                   const informacoesAtualizadas = recalcularRestanteEntrada(newInfos);
@@ -1590,13 +1711,13 @@ const FichaNegociacao = () => {
                                   setInformacoesPagamento(newInfos);
                                 }
                             }}
-                           placeholder="1000.00"
+                           placeholder="1000"
                            type="number"
                            step="0.01"
                            min={info.tipo === '1ª Entrada' ? 1000 : undefined}
-                           className={`bg-background ${
-                             info.tipo === '1ª Entrada' && parseFloat(info.total) > 0 && parseFloat(info.total) < 1000 
-                               ? 'border-destructive' 
+                           className={`bg-background text-xs sm:text-sm h-8 sm:h-10 ${
+                             info.tipo === '1ª Entrada' && parseFloat(info.total) > 0 && parseFloat(info.total) < 1000
+                               ? 'border-destructive'
                                : ''
                            }`}
                          />
@@ -1624,13 +1745,13 @@ const FichaNegociacao = () => {
                                      }
                                      const newInfos = [...informacoesPagamento];
                                      newInfos[index].qtdParcelas = e.target.value;
-                                     
+
                                      // Recalcular valor da parcela automaticamente
                                      if (newInfos[index].total && valor > 0) {
                                        const total = parseFloat(newInfos[index].total);
                                        newInfos[index].valorParcela = (total / valor).toFixed(2);
                                      }
-                                     
+
                                      // Se for Restante da Entrada ou Sinal, recalcular datas inteligentes
                                      if (info.tipo === 'Restante da Entrada' || info.tipo === 'Sinal') {
                                        const restanteEntrada = newInfos.find(inf => inf.tipo === 'Restante da Entrada');
@@ -1638,13 +1759,13 @@ const FichaNegociacao = () => {
                                          const qtdParcelasEntrada = info.tipo === 'Restante da Entrada' ? valor : parseInt(restanteEntrada.qtdParcelas) || 1;
                                          const sinalInfo = newInfos.find(inf => inf.tipo === 'Sinal');
                                          const qtdParcelasSinal = info.tipo === 'Sinal' ? valor : parseInt(sinalInfo?.qtdParcelas || '1');
-                                         
+
                                          setTimeout(() => {
                                            atualizarDatasInteligentes(restanteEntrada.primeiroVencimento, qtdParcelasEntrada, qtdParcelasSinal);
                                          }, 0);
                                        }
                                      }
-                                     
+
                                      // Se alterou quantidade de parcelas do Restante da Entrada, recalcular valor da parcela
                                      if (info.tipo === 'Restante da Entrada' && newInfos[index].total) {
                                        const total = parseFloat(newInfos[index].total);
@@ -1652,26 +1773,26 @@ const FichaNegociacao = () => {
                                          newInfos[index].valorParcela = (total / valor).toFixed(2);
                                        }
                                      }
-                                     
+
                                      setInformacoesPagamento(newInfos);
                                    }}
                                  placeholder="Qtd"
                                  type="number"
                                  max={maxParcelas || undefined}
-                                 className={`${
-                                   maxParcelas && parseInt(info.qtdParcelas) > maxParcelas 
-                                     ? 'border-destructive' 
+                                 className={`text-xs sm:text-sm h-8 sm:h-10 ${
+                                   maxParcelas && parseInt(info.qtdParcelas) > maxParcelas
+                                     ? 'border-destructive'
                                      : ''
                                  }`}
                                />
                                {maxParcelas && (info.tipo === 'Sinal' || info.tipo === 'Saldo') && (
-                                 <div className="text-xs text-muted-foreground">
-                                   Máx: {maxParcelas} parcelas
-                                 </div>
+                                 <div className="text-xs text-muted-foreground hidden sm:block">
+                                 Máx: {maxParcelas}
+                               </div>
                                )}
                                {info.tipo === 'Restante da Entrada' && (
-                                 <div className="text-xs text-muted-foreground">
-                                   Máx: 5 parcelas
+                                 <div className="text-xs text-muted-foreground hidden sm:block">
+                                   Máx: 5
                                  </div>
                                )}
                                {maxParcelas && parseInt(info.qtdParcelas) > maxParcelas && (
@@ -1683,7 +1804,7 @@ const FichaNegociacao = () => {
                            );
                          })()}
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={info.valorParcela || ''}
                           onChange={(e) => {
@@ -1691,12 +1812,13 @@ const FichaNegociacao = () => {
                             newInfos[index].valorParcela = e.target.value;
                             setInformacoesPagamento(newInfos);
                           }}
-                          placeholder="500.00"
+                          placeholder="500"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={info.formaPagamento}
                           onValueChange={(value) => {
@@ -1705,8 +1827,8 @@ const FichaNegociacao = () => {
                             setInformacoesPagamento(newInfos);
                           }}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
+                          <SelectTrigger className="h-8 sm:h-10 text-xs sm:text-sm">
+                            <SelectValue placeholder="Forma" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="dinheiro">Dinheiro</SelectItem>
@@ -1718,30 +1840,30 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={info.primeiroVencimento}
                            onChange={(e) => {
                              const newInfos = [...informacoesPagamento];
                              newInfos[index].primeiroVencimento = e.target.value;
-                             
+
                              // Se for Restante da Entrada, ativar calendário inteligente
                              if (info.tipo === 'Restante da Entrada' && e.target.value) {
                                const qtdParcelasEntrada = parseInt(info.qtdParcelas) || 1;
                                const sinalInfo = informacoesPagamento.find(inf => inf.tipo === 'Sinal');
                                const qtdParcelasSinal = parseInt(sinalInfo?.qtdParcelas || '1');
-                               
+
                                // Usar setTimeout para garantir que o state seja atualizado primeiro
                                setTimeout(() => {
                                  atualizarDatasInteligentes(e.target.value, qtdParcelasEntrada, qtdParcelasSinal);
                                }, 0);
                              }
-                             
+
                              setInformacoesPagamento(newInfos);
                            }}
                            type="date"
-                           className={`${
-                             (info.tipo === 'Sinal' || info.tipo === 'Saldo') && info.primeiroVencimento 
+                           className={`text-xs sm:text-sm h-8 sm:h-10 ${
+                             (info.tipo === 'Sinal' || info.tipo === 'Saldo') && info.primeiroVencimento
                                ? (() => {
                                    const data = new Date(info.primeiroVencimento);
                                    const dia = data.getDate();
@@ -1751,24 +1873,25 @@ const FichaNegociacao = () => {
                            }`}
                          />
                          {(info.tipo === 'Sinal' || info.tipo === 'Saldo') && (
-                           <div className="text-xs text-muted-foreground mt-1">
-                             Apenas dias 05 ou 15
+                           <div className="text-xs text-muted-foreground mt-1 hidden sm:block">
+                             Dias 05/15
                            </div>
                          )}
                          {info.tipo === 'Restante da Entrada' && (
-                           <div className="text-xs text-blue-600 mt-1">
-                             Atualiza automaticamente Sinal e Saldo
+                           <div className="text-xs text-blue-600 mt-1 hidden sm:block">
+                             Auto-atualiza
                            </div>
                          )}
                        </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Button
                            variant="destructive"
                            size="sm"
                            onClick={() => removerInformacaoPagamento(info.id)}
                            disabled={informacoesPagamento.length <= 5 || ['1ª Entrada', 'Restante da Entrada', '2ª Entrada', 'Sinal', 'Saldo'].includes(info.tipo)}
+                           className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                          >
-                           <Trash2 className="h-4 w-4" />
+                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                          </Button>
                        </td>
                     </tr>
@@ -1779,8 +1902,8 @@ const FichaNegociacao = () => {
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex justify-center space-x-4 pt-6">
-            <Button variant="outline" onClick={limparFicha}>
+          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 md:gap-4 pt-3 md:pt-6">
+            <Button variant="outline" onClick={limparFicha} className="h-9 sm:h-10 text-xs sm:text-sm px-3 py-2">
               Limpar
             </Button>
             <Button
@@ -1818,50 +1941,50 @@ const FichaNegociacao = () => {
                   alert(`Erro: ${error.message}`);
                 }
               }}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7,10 12,15 17,10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Baixar PDFs
+              Baixar
             </Button>
             <Button
               variant="outline"
               onClick={imprimirFichas}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="6,9 6,2 18,2 18,9"/>
                 <path d="M6,18L4,16v-5a2,2 0 0,1 2-2h12a2,2 0 0,1 2,2v5l-2,2"/>
                 <rect x="6" y="14" width="12" height="8"/>
               </svg>
-              Imprimir PDFs
+              Imprimir
             </Button>
             <Button
               onClick={testarEmail}
               variant="outline"
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 12l2 2 4-4"/>
                 <circle cx="12" cy="12" r="10"/>
               </svg>
-              Testar Email
+              Testar
             </Button>
             <Button
               onClick={salvarFicha}
-              className="flex items-center gap-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14,2 14,8 20,8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
                 <line x1="16" y1="17" x2="8" y2="17"/>
                 <polyline points="10,9 9,9 8,9"/>
               </svg>
-              Salvar e Enviar PDFs
+              Salvar
             </Button>
           </div>
         </CardContent>

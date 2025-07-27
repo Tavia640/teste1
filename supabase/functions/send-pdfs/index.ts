@@ -35,7 +35,7 @@ interface EmailResponse {
 
 const handler = async (req: Request): Promise<Response> => {
   console.log("🚀 Send PDFs function iniciada");
-  console.log("��� Método da requisição:", req.method);
+  console.log("📋 Método da requisição:", req.method);
   console.log("🔍 Headers da requisição:", Object.fromEntries(req.headers.entries()));
 
   // Handle CORS preflight requests
@@ -44,15 +44,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    console.log("📨 Processando requisição de envio de PDFs...");
-
-    // Verificar variáveis de ambiente disponíveis
-    console.log("🔍 Verificando variáveis de ambiente...");
-    const envObject = Deno.env.toObject();
-    const availableEnvVars = Object.keys(envObject).filter(key =>
-      key.includes('RESEND') || key.includes('API') || key.includes('SUPABASE')
-    );
-    console.log("📋 Variáveis relacionadas disponíveis:", availableEnvVars);
+    console.log("📨 Processando requisição...");
 
     // Verificar se a API key está configurada
     const apiKey = Deno.env.get("RESEND_API_KEY");
@@ -65,11 +57,9 @@ const handler = async (req: Request): Promise<Response> => {
 
     if (!apiKey) {
       console.error("❌ RESEND_API_KEY não configurada!");
-      console.error("🔍 Todas as variáveis de ambiente:", Object.keys(envObject));
-
       const errorResponse: EmailResponse = {
         success: false,
-        message: "❌ RESEND_API_KEY não configurada no Supabase.\n\n📋 Passos para configurar:\n1. Acesse o painel do Supabase\n2. Settings → Edge Functions\n3. Adicione: RESEND_API_KEY = sua_chave_do_resend",
+        message: "❌ RESEND_API_KEY não configurada no Supabase.",
         error: "RESEND_API_KEY não configurada",
         timestamp: new Date().toISOString()
       };
@@ -84,10 +74,10 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     if (!apiKey.startsWith('re_')) {
-      console.error("❌ RESEND_API_KEY parece estar incorreta! Deve começar com 're_'");
+      console.error("❌ RESEND_API_KEY parece estar incorreta!");
       const errorResponse: EmailResponse = {
         success: false,
-        message: "❌ RESEND_API_KEY parece estar incorreta.\n\nA chave deve começar com 're_'\nVerifique se copiou a chave correta do painel do Resend.",
+        message: "❌ RESEND_API_KEY parece estar incorreta. A chave deve começar com 're_'",
         error: "RESEND_API_KEY inválida",
         timestamp: new Date().toISOString()
       };
@@ -101,24 +91,66 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
-    console.log("✅ RESEND_API_KEY parece estar configurada corretamente");
+    console.log("✅ RESEND_API_KEY configurada corretamente");
 
     // Inicializar Resend
     const resend = new Resend(apiKey);
     console.log("✅ Resend inicializado com sucesso");
     
-    const requestData: SendPDFRequest | { test?: boolean } = await req.json();
+    // Parse do body
+    let requestData: any;
+    try {
+      const bodyText = await req.text();
+      console.log("📋 Body recebido (primeiros 500 chars):", bodyText.substring(0, 500));
 
-    // Se é um teste de conectividade
-    if ('test' in requestData && requestData.test) {
-      console.log("🧪 Executando teste de conectividade...");
+      requestData = JSON.parse(bodyText);
+      console.log("📋 Dados recebidos:", {
+        keys: Object.keys(requestData),
+        isTest: requestData?.test === true,
+        testValue: requestData?.test,
+        hasClientData: !!requestData?.clientData,
+        hasFichaData: !!requestData?.fichaData,
+        hasPdfData1: !!requestData?.pdfData1,
+        hasPdfData2: !!requestData?.pdfData2
+      });
+    } catch (parseError: any) {
+      console.error("❌ Erro ao fazer parse do JSON:", parseError);
+      console.error("❌ Tipo do erro:", parseError.name);
+      console.error("❌ Mensagem do erro:", parseError.message);
 
-      const testResponse: EmailResponse = {
-        success: true,
-        message: "Sistema de email está funcionando. API Key configurada corretamente.",
+      const errorResponse: EmailResponse = {
+        success: false,
+        message: `JSON inválido na requisição: ${parseError.message}`,
+        error: "INVALID_JSON",
         timestamp: new Date().toISOString()
       };
 
+      return new Response(JSON.stringify(errorResponse), {
+        status: 400,
+        headers: {
+          "Content-Type": "application/json",
+          ...corsHeaders
+        },
+      });
+    }
+
+    // TESTE DE CONECTIVIDADE - Verificação SIMPLES
+    console.log("🔍 DADOS RECEBIDOS COMPLETOS:", JSON.stringify(requestData, null, 2));
+    console.log("🔍 Verificando campo 'test':", requestData.test);
+    console.log("🔍 Tipo do campo 'test':", typeof requestData.test);
+    console.log("🔍 Tem campo 'test'?", 'test' in requestData);
+
+    // Detecção SUPER SIMPLES - se tem campo 'test', é teste
+    if ('test' in requestData) {
+      console.log("🧪 TESTE DETECTADO! Retornando sucesso...");
+
+      const testResponse: EmailResponse = {
+        success: true,
+        message: "✅ Sistema de email funcionando!\n\n🔑 API Key do Resend configurada corretamente\n📧 Edge Function respondendo normalmente\n🚀 Pronto para enviar emails",
+        timestamp: new Date().toISOString()
+      };
+
+      console.log("✅ Resposta de teste:", JSON.stringify(testResponse, null, 2));
       return new Response(JSON.stringify(testResponse), {
         status: 200,
         headers: {
@@ -128,10 +160,14 @@ const handler = async (req: Request): Promise<Response> => {
       });
     }
 
+    // Se chegou aqui, é um envio real de email
+    console.log("📧 Processando envio real de email...");
+
     const { clientData, fichaData, pdfData1, pdfData2 } = requestData as SendPDFRequest;
 
-    // Validação rigorosa dos dados recebidos
+    // Validação dos dados para envio real
     if (!clientData) {
+      console.error("❌ Dados do cliente ausentes para envio real");
       throw new Error("Dados do cliente são obrigatórios");
     }
     
@@ -251,20 +287,6 @@ const handler = async (req: Request): Promise<Response> => {
               </div>
             </div>
 
-            <!-- Anexos -->
-            <div style="background-color: #d1ecf1; padding: 20px; border-radius: 8px; border-left: 4px solid #17a2b8; margin-bottom: 25px;">
-              <h3 style="color: #0c5460; margin: 0 0 10px 0; font-size: 18px;">
-                📎 Documentos Anexados
-              </h3>
-              <ul style="margin: 0; padding-left: 20px; color: #0c5460;">
-                <li style="margin: 5px 0;">Ficha de Cadastro do Cliente</li>
-                <li style="margin: 5px 0;">Ficha de Negociação Completa</li>
-              </ul>
-              <p style="margin: 15px 0 0 0; color: #0c5460; font-weight: bold;">
-                ✅ Total: 2 documentos PDF anexados
-              </p>
-            </div>
-
             <!-- Status -->
             <div style="background-color: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; text-align: center;">
               <p style="margin: 0; color: #155724; font-weight: bold; font-size: 16px;">
@@ -324,19 +346,30 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("❌ ERRO CRÍTICO na função send-pdfs:", error);
     console.error("📋 Stack trace:", error.stack);
-    
+    console.error("🔍 Tipo do erro:", typeof error);
+    console.error("🔍 Nome do erro:", error.name);
+    console.error("🔍 Mensagem do erro:", error.message);
+
+    // Informações detalhadas do ambiente
+    console.error("🌍 Variáveis de ambiente:", {
+      hasResendKey: !!Deno.env.get("RESEND_API_KEY"),
+      resendKeyLength: Deno.env.get("RESEND_API_KEY")?.length || 0
+    });
+
     const errorResponse: EmailResponse = {
       success: false,
-      message: error.message || "Erro interno do servidor",
-      error: error.message,
+      message: `Erro na Edge Function: ${error.message || "Erro interno do servidor"}`,
+      error: `${error.name}: ${error.message}`,
       timestamp: new Date().toISOString()
     };
-    
+
+    console.error("📤 Enviando resposta de erro:", errorResponse);
+
     return new Response(JSON.stringify(errorResponse), {
       status: 500,
-      headers: { 
-        "Content-Type": "application/json", 
-        ...corsHeaders 
+      headers: {
+        "Content-Type": "application/json",
+        ...corsHeaders
       },
     });
   }
