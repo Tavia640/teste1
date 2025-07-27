@@ -1174,7 +1174,7 @@ const FichaNegociacao = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-3 sm:p-4 md:p-6 space-y-4 md:space-y-6">
+    <div className="max-w-6xl mx-auto p-2 sm:p-3 md:p-6 space-y-3 md:space-y-6">
       {/* Alerta do Modo Offline */}
       {offlineMode && (
         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
@@ -1210,7 +1210,7 @@ const FichaNegociacao = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Seção Inicial */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:gap-6">
             <div>
               <Label htmlFor="liner">LINER:</Label>
               <Input
@@ -1235,30 +1235,30 @@ const FichaNegociacao = () => {
           <div>
             <Label className="text-base font-semibold">TIPO DE VENDA: *</Label>
             <RadioGroup value={tipoVenda} onValueChange={setTipoVenda} className="mt-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-                <div className="flex items-center space-x-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="semestral" id="semestral" />
-                  <Label htmlFor="semestral">Semestral</Label>
+                  <Label htmlFor="semestral" className="text-xs sm:text-sm">Semestral</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="anual" id="anual" />
-                  <Label htmlFor="anual">Anual</Label>
+                  <Label htmlFor="anual" className="text-xs sm:text-sm">Anual</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="a-vista" id="a-vista" />
-                  <Label htmlFor="a-vista">À Vista</Label>
+                  <Label htmlFor="a-vista" className="text-xs sm:text-sm">À Vista</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="ate-36x" id="ate-36x" />
-                  <Label htmlFor="ate-36x">Até 36x</Label>
+                  <Label htmlFor="ate-36x" className="text-xs sm:text-sm">Até 36x</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="padrao" id="padrao" />
-                  <Label htmlFor="padrao">Padrão</Label>
+                  <Label htmlFor="padrao" className="text-xs sm:text-sm">Padrão</Label>
                 </div>
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 text-sm">
                   <RadioGroupItem value="linear" id="linear" />
-                  <Label htmlFor="linear">Linear</Label>
+                  <Label htmlFor="linear" className="text-xs sm:text-sm">Linear</Label>
                 </div>
               </div>
             </RadioGroup>
@@ -1268,23 +1268,23 @@ const FichaNegociacao = () => {
 
           {/* Tipo de Parcela Paga em Sala */}
           <div>
-            <Label className="text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
-            <div className="mt-4 overflow-x-auto shadow-sm rounded-lg border">
-              <table className="w-full min-w-[800px] border-collapse bg-white">
+            <Label className="text-sm sm:text-lg font-semibold">Tipo de Parcela Paga em Sala *</Label>
+            <div className="mt-2 sm:mt-4 overflow-x-auto shadow-sm rounded-lg border">
+              <table className="w-full min-w-[600px] sm:min-w-[800px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-3 text-left">Tipo de Parcela Paga em Sala</th>
-                    <th className="border border-border p-3 text-left">Valor Total Pago em Sala *</th>
-                    <th className="border border-border p-3 text-left">Valor Distribuído para cada Unidade *</th>
-                    <th className="border border-border p-3 text-left">Quantidade de Cotas *</th>
-                    <th className="border border-border p-3 text-left">Forma de Pag. *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo Parcela</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Total Pago *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Valor por Unidade *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Qtd Cotas *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Forma Pag. *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {parcelasPagasSala.map((parcela, index) => (
                     <tr key={parcela.id}>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.tipo}
                           onChange={(e) => {
@@ -1292,10 +1292,11 @@ const FichaNegociacao = () => {
                             newParcelas[index].tipo = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="Tipo de parcela"
+                          placeholder="Tipo"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.valorTotal || ''}
                           onChange={(e) => {
@@ -1303,12 +1304,13 @@ const FichaNegociacao = () => {
                             newParcelas[index].valorTotal = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="1000.00"
+                          placeholder="1000"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={parcela.valorDistribuido || ''}
                              onChange={(e) => {
@@ -1334,12 +1336,13 @@ const FichaNegociacao = () => {
                                 const informacoesAtualizadas = recalcularRestanteEntrada(novasInformacoes);
                                 setInformacoesPagamento(informacoesAtualizadas);
                             }}
-                           placeholder="1000.00"
+                           placeholder="1000"
                            type="number"
                            step="0.01"
+                           className="text-xs sm:text-sm h-8 sm:h-10"
                          />
                        </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={parcela.quantidadeCotas}
                           onChange={(e) => {
@@ -1347,14 +1350,15 @@ const FichaNegociacao = () => {
                             newParcelas[index].quantidadeCotas = e.target.value;
                             setParcelasPagasSala(newParcelas);
                           }}
-                          placeholder="Qtd cotas"
+                          placeholder="Qtd"
                           type="number"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
-                        <div className="space-y-2">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
+                        <div className="space-y-1 sm:space-y-2">
                           {parcela.formasPagamento.map((forma, formaIndex) => (
-                            <div key={formaIndex} className="flex items-center space-x-2">
+                            <div key={formaIndex} className="flex items-center space-x-1">
                               <Select
                                 value={forma}
                                 onValueChange={(value) => {
@@ -1363,8 +1367,8 @@ const FichaNegociacao = () => {
                                   setParcelasPagasSala(newParcelas);
                                 }}
                               >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione forma" />
+                                <SelectTrigger className="h-8 sm:h-10 text-xs sm:text-sm">
+                                  <SelectValue placeholder="Forma" />
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="dinheiro">Dinheiro</SelectItem>
@@ -1394,21 +1398,22 @@ const FichaNegociacao = () => {
                             variant="outline"
                             size="sm"
                             onClick={() => adicionarFormaPagamento(parcela.id)}
-                            className="w-full"
+                            className="w-full h-7 sm:h-8 text-xs sm:text-sm"
                           >
                             <Plus className="h-3 w-3 mr-1" />
-                            Adicionar Forma de Pagamento
+                            + Forma
                           </Button>
                         </div>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => removerParcelaPagaSala(parcela.id)}
                           disabled={parcelasPagasSala.length === 1}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </td>
                     </tr>
@@ -1422,35 +1427,35 @@ const FichaNegociacao = () => {
 
           {/* Contratos */}
           <div>
-            <Label className="text-lg font-semibold">Contratos *</Label>
-            <Button onClick={adicionarContrato} className="mt-2 mb-4" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Contrato
+            <Label className="text-sm sm:text-lg font-semibold">Contratos *</Label>
+            <Button onClick={adicionarContrato} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Contrato
             </Button>
             <div className="overflow-x-auto shadow-sm rounded-lg border">
-              <table className="w-full min-w-[900px] border-collapse bg-white">
+              <table className="w-full min-w-[700px] sm:min-w-[900px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-2 md:p-3 text-left text-sm md:text-base">Tipo de Contrato *</th>
-                    <th className="border border-border p-3 text-left">Empreendimento *</th>
-                    <th className="border border-border p-3 text-left">Torre *</th>
-                    <th className="border border-border p-3 text-left">Apartamento *</th>
-                    <th className="border border-border p-3 text-left">Cota *</th>
-                    <th className="border border-border p-3 text-left">Categoria de Preço *</th>
-                    <th className="border border-border p-3 text-left">Valor *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Empreendimento *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Torre *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Apt *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Cota *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Categoria *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Valor *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {contratos.map((contrato, index) => (
                     <tr key={contrato.id}>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <div className="space-y-1">
-                          <div className="text-sm text-muted-foreground">Físico</div>
-                          <div className="text-sm text-muted-foreground">Digital</div>
+                          <div className="text-xs text-muted-foreground">Físico</div>
+                          <div className="text-xs text-muted-foreground">Digital</div>
                         </div>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={contrato.empreendimento}
                           onValueChange={(value) => {
@@ -1468,8 +1473,8 @@ const FichaNegociacao = () => {
                           }}
                           disabled={loading}
                         >
-                          <SelectTrigger className="bg-background">
-                            <SelectValue placeholder={loading ? "Carregando..." : "Selecione empreendimento"} />
+                          <SelectTrigger className="bg-background h-8 sm:h-10 text-xs sm:text-sm">
+                            <SelectValue placeholder={loading ? "Loading..." : "Empreend."} />
                           </SelectTrigger>
                           <SelectContent className="bg-background z-50">
                             {empreendimentos.map((emp) => (
@@ -1480,7 +1485,7 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={contrato.torre}
                            onChange={(e) => {
@@ -1489,9 +1494,10 @@ const FichaNegociacao = () => {
                              setContratos(newContratos);
                            }}
                            placeholder="Torre"
+                           className="text-xs sm:text-sm h-8 sm:h-10"
                          />
                        </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.apartamento}
                           onChange={(e) => {
@@ -1499,10 +1505,11 @@ const FichaNegociacao = () => {
                             newContratos[index].apartamento = e.target.value;
                             setContratos(newContratos);
                           }}
-                          placeholder="Apartamento"
+                          placeholder="Apt"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.cota}
                           onChange={(e) => {
@@ -1511,21 +1518,22 @@ const FichaNegociacao = () => {
                             setContratos(newContratos);
                           }}
                           placeholder="Cota"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={contrato.categoriaPreco}
                           onValueChange={(value) => {
                             const newContratos = [...contratos];
                             newContratos[index].categoriaPreco = value;
                             // Auto-preencher valor baseado na categoria selecionada
-                            const categoria = categoriasPreco.find(cat => 
+                            const categoria = categoriasPreco.find(cat =>
                               cat.categoria_preco === value && cat.empreendimento_id === contrato.empreendimento
                             );
                             if (categoria) {
                               newContratos[index].valor = categoria.vir_cota.toString();
-                              
+
                                // Preencher automaticamente as informações de pagamento
                                const dados = calcularDadosCategoria(contrato.empreendimento, value);
                                if (dados) {
@@ -1536,11 +1544,11 @@ const FichaNegociacao = () => {
                           }}
                           disabled={!contrato.empreendimento || loading}
                         >
-                          <SelectTrigger className="bg-background">
+                          <SelectTrigger className="bg-background h-8 sm:h-10 text-xs sm:text-sm">
                             <SelectValue placeholder={
-                              !contrato.empreendimento 
-                                ? "Selecione empreendimento primeiro" 
-                                : "Selecione categoria de preço"
+                              !contrato.empreendimento
+                                ? "Emp. primeiro"
+                                : "Categoria"
                             } />
                           </SelectTrigger>
                           <SelectContent className="bg-background z-50">
@@ -1552,7 +1560,7 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={contrato.valor || ''}
                           onChange={(e) => {
@@ -1560,19 +1568,21 @@ const FichaNegociacao = () => {
                             newContratos[index].valor = e.target.value;
                             setContratos(newContratos);
                           }}
-                          placeholder="50000.00"
+                          placeholder="50000"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => removerContrato(contrato.id)}
                           disabled={contratos.length === 1}
+                          className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </td>
                     </tr>
@@ -1628,30 +1638,30 @@ const FichaNegociacao = () => {
 
           {/* Informações de Pagamento */}
           <div>
-            <Label className="text-lg font-semibold">Informações de Pagamento</Label>
-            <Button onClick={adicionarEntrada} className="mt-2 mb-4" variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Adicionar Entrada
+            <Label className="text-sm sm:text-lg font-semibold">Informações de Pagamento</Label>
+            <Button onClick={adicionarEntrada} className="mt-2 mb-4 h-8 sm:h-10 text-xs sm:text-sm" variant="outline">
+              <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+              + Entrada
             </Button>
             <div className="overflow-x-auto shadow-sm rounded-lg border">
-              <table className="w-full min-w-[800px] border-collapse bg-white">
+              <table className="w-full min-w-[600px] sm:min-w-[800px] border-collapse bg-white text-xs sm:text-sm">
                 <thead>
                   <tr className="bg-muted">
-                    <th className="border border-border p-2 md:p-3 text-left text-sm md:text-base">Tipo</th>
-                    <th className="border border-border p-3 text-left">Total *</th>
-                    <th className="border border-border p-3 text-left">Qtd. Parcelas *</th>
-                    <th className="border border-border p-3 text-left">Valor Parcela *</th>
-                    <th className="border border-border p-3 text-left">Forma de Pag. *</th>
-                    <th className="border border-border p-3 text-left">1º Vencimento *</th>
-                    <th className="border border-border p-3 text-left">Ações</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Tipo</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Total *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Qtd *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Parcela *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Forma *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Venc. *</th>
+                    <th className="border border-border p-1 sm:p-2 md:p-3 text-left text-xs sm:text-sm">Ações</th>
                   </tr>
                 </thead>
                 <tbody>
                   {informacoesPagamento.map((info, index) => (
                     <tr key={info.id}>
-                          <td className="border border-border p-3">
+                          <td className="border border-border p-1 sm:p-2 md:p-3">
                             {info.tipo === 'Restante da Entrada' ? (
-                              <span className="text-muted-foreground bg-muted p-2 rounded block text-center">
+                              <span className="text-muted-foreground bg-muted p-1 rounded block text-center text-xs">
                                 {info.tipo}
                               </span>
                             ) : (
@@ -1664,10 +1674,11 @@ const FichaNegociacao = () => {
                                 }}
                                 placeholder="Tipo"
                                 disabled={['1ª Entrada', '2ª Entrada', 'Sinal', 'Saldo'].includes(info.tipo)}
+                                className="text-xs sm:text-sm h-8 sm:h-10"
                               />
                             )}
                           </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={info.total || ''}
                             onChange={(e) => {
@@ -1687,7 +1698,7 @@ const FichaNegociacao = () => {
                                 const qtdParcelas = parseInt(newInfos[index].qtdParcelas);
                                 newInfos[index].valorParcela = (total / qtdParcelas).toFixed(2);
                               }
-                              
+
                                // Se for uma entrada (1ª, 2ª, 3ª, etc.), recalcular Restante da Entrada
                                 if (info.tipo.includes('ª Entrada')) {
                                   const informacoesAtualizadas = recalcularRestanteEntrada(newInfos);
@@ -1696,13 +1707,13 @@ const FichaNegociacao = () => {
                                   setInformacoesPagamento(newInfos);
                                 }
                             }}
-                           placeholder="1000.00"
+                           placeholder="1000"
                            type="number"
                            step="0.01"
                            min={info.tipo === '1ª Entrada' ? 1000 : undefined}
-                           className={`bg-background ${
-                             info.tipo === '1ª Entrada' && parseFloat(info.total) > 0 && parseFloat(info.total) < 1000 
-                               ? 'border-destructive' 
+                           className={`bg-background text-xs sm:text-sm h-8 sm:h-10 ${
+                             info.tipo === '1ª Entrada' && parseFloat(info.total) > 0 && parseFloat(info.total) < 1000
+                               ? 'border-destructive'
                                : ''
                            }`}
                          />
@@ -1730,13 +1741,13 @@ const FichaNegociacao = () => {
                                      }
                                      const newInfos = [...informacoesPagamento];
                                      newInfos[index].qtdParcelas = e.target.value;
-                                     
+
                                      // Recalcular valor da parcela automaticamente
                                      if (newInfos[index].total && valor > 0) {
                                        const total = parseFloat(newInfos[index].total);
                                        newInfos[index].valorParcela = (total / valor).toFixed(2);
                                      }
-                                     
+
                                      // Se for Restante da Entrada ou Sinal, recalcular datas inteligentes
                                      if (info.tipo === 'Restante da Entrada' || info.tipo === 'Sinal') {
                                        const restanteEntrada = newInfos.find(inf => inf.tipo === 'Restante da Entrada');
@@ -1744,13 +1755,13 @@ const FichaNegociacao = () => {
                                          const qtdParcelasEntrada = info.tipo === 'Restante da Entrada' ? valor : parseInt(restanteEntrada.qtdParcelas) || 1;
                                          const sinalInfo = newInfos.find(inf => inf.tipo === 'Sinal');
                                          const qtdParcelasSinal = info.tipo === 'Sinal' ? valor : parseInt(sinalInfo?.qtdParcelas || '1');
-                                         
+
                                          setTimeout(() => {
                                            atualizarDatasInteligentes(restanteEntrada.primeiroVencimento, qtdParcelasEntrada, qtdParcelasSinal);
                                          }, 0);
                                        }
                                      }
-                                     
+
                                      // Se alterou quantidade de parcelas do Restante da Entrada, recalcular valor da parcela
                                      if (info.tipo === 'Restante da Entrada' && newInfos[index].total) {
                                        const total = parseFloat(newInfos[index].total);
@@ -1758,15 +1769,15 @@ const FichaNegociacao = () => {
                                          newInfos[index].valorParcela = (total / valor).toFixed(2);
                                        }
                                      }
-                                     
+
                                      setInformacoesPagamento(newInfos);
                                    }}
                                  placeholder="Qtd"
                                  type="number"
                                  max={maxParcelas || undefined}
-                                 className={`${
-                                   maxParcelas && parseInt(info.qtdParcelas) > maxParcelas 
-                                     ? 'border-destructive' 
+                                 className={`text-xs sm:text-sm h-8 sm:h-10 ${
+                                   maxParcelas && parseInt(info.qtdParcelas) > maxParcelas
+                                     ? 'border-destructive'
                                      : ''
                                  }`}
                                />
@@ -1789,7 +1800,7 @@ const FichaNegociacao = () => {
                            );
                          })()}
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Input
                           value={info.valorParcela || ''}
                           onChange={(e) => {
@@ -1797,12 +1808,13 @@ const FichaNegociacao = () => {
                             newInfos[index].valorParcela = e.target.value;
                             setInformacoesPagamento(newInfos);
                           }}
-                          placeholder="500.00"
+                          placeholder="500"
                           type="number"
                           step="0.01"
+                          className="text-xs sm:text-sm h-8 sm:h-10"
                         />
                       </td>
-                      <td className="border border-border p-3">
+                      <td className="border border-border p-1 sm:p-2 md:p-3">
                         <Select
                           value={info.formaPagamento}
                           onValueChange={(value) => {
@@ -1811,8 +1823,8 @@ const FichaNegociacao = () => {
                             setInformacoesPagamento(newInfos);
                           }}
                         >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione" />
+                          <SelectTrigger className="h-8 sm:h-10 text-xs sm:text-sm">
+                            <SelectValue placeholder="Forma" />
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="dinheiro">Dinheiro</SelectItem>
@@ -1824,30 +1836,30 @@ const FichaNegociacao = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Input
                            value={info.primeiroVencimento}
                            onChange={(e) => {
                              const newInfos = [...informacoesPagamento];
                              newInfos[index].primeiroVencimento = e.target.value;
-                             
+
                              // Se for Restante da Entrada, ativar calendário inteligente
                              if (info.tipo === 'Restante da Entrada' && e.target.value) {
                                const qtdParcelasEntrada = parseInt(info.qtdParcelas) || 1;
                                const sinalInfo = informacoesPagamento.find(inf => inf.tipo === 'Sinal');
                                const qtdParcelasSinal = parseInt(sinalInfo?.qtdParcelas || '1');
-                               
+
                                // Usar setTimeout para garantir que o state seja atualizado primeiro
                                setTimeout(() => {
                                  atualizarDatasInteligentes(e.target.value, qtdParcelasEntrada, qtdParcelasSinal);
                                }, 0);
                              }
-                             
+
                              setInformacoesPagamento(newInfos);
                            }}
                            type="date"
-                           className={`${
-                             (info.tipo === 'Sinal' || info.tipo === 'Saldo') && info.primeiroVencimento 
+                           className={`text-xs sm:text-sm h-8 sm:h-10 ${
+                             (info.tipo === 'Sinal' || info.tipo === 'Saldo') && info.primeiroVencimento
                                ? (() => {
                                    const data = new Date(info.primeiroVencimento);
                                    const dia = data.getDate();
@@ -1867,14 +1879,15 @@ const FichaNegociacao = () => {
                            </div>
                          )}
                        </td>
-                       <td className="border border-border p-3">
+                       <td className="border border-border p-1 sm:p-2 md:p-3">
                          <Button
                            variant="destructive"
                            size="sm"
                            onClick={() => removerInformacaoPagamento(info.id)}
                            disabled={informacoesPagamento.length <= 5 || ['1ª Entrada', 'Restante da Entrada', '2ª Entrada', 'Sinal', 'Saldo'].includes(info.tipo)}
+                           className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                          >
-                           <Trash2 className="h-4 w-4" />
+                           <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                          </Button>
                        </td>
                     </tr>
@@ -1885,8 +1898,8 @@ const FichaNegociacao = () => {
           </div>
 
           {/* Botões de Ação */}
-          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4 pt-4 md:pt-6">
-            <Button variant="outline" onClick={limparFicha}>
+          <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-3 md:gap-4 pt-3 md:pt-6">
+            <Button variant="outline" onClick={limparFicha} className="h-9 sm:h-10 text-xs sm:text-sm px-3 py-2">
               Limpar
             </Button>
             <Button
@@ -1924,50 +1937,50 @@ const FichaNegociacao = () => {
                   alert(`Erro: ${error.message}`);
                 }
               }}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
                 <polyline points="7,10 12,15 17,10"/>
                 <line x1="12" y1="15" x2="12" y2="3"/>
               </svg>
-              Baixar PDFs
+              Baixar
             </Button>
             <Button
               variant="outline"
               onClick={imprimirFichas}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="6,9 6,2 18,2 18,9"/>
                 <path d="M6,18L4,16v-5a2,2 0 0,1 2-2h12a2,2 0 0,1 2,2v5l-2,2"/>
                 <rect x="6" y="14" width="12" height="8"/>
               </svg>
-              Imprimir PDFs
+              Imprimir
             </Button>
             <Button
               onClick={testarEmail}
               variant="outline"
-              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M9 12l2 2 4-4"/>
                 <circle cx="12" cy="12" r="10"/>
               </svg>
-              Testar Email
+              Testar
             </Button>
             <Button
               onClick={salvarFicha}
-              className="flex items-center justify-center gap-2 w-full sm:w-auto text-sm md:text-base px-4 py-2"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                 <polyline points="14,2 14,8 20,8"/>
                 <line x1="16" y1="13" x2="8" y2="13"/>
                 <line x1="16" y1="17" x2="8" y2="17"/>
                 <polyline points="10,9 9,9 8,9"/>
               </svg>
-              Salvar e Enviar PDFs
+              Salvar
             </Button>
           </div>
         </CardContent>
