@@ -1355,7 +1355,7 @@ const FichaNegociacao = () => {
                               newParcelas[index].valorDistribuido = e.target.value;
                               setParcelasPagasSala(newParcelas);
 
-                                // Clonar valor para 1ª Entrada automaticamente
+                                // Clonar valor para 1�� Entrada automaticamente
                                 const novasInformacoes = [...informacoesPagamento];
                                 const primeiraEntradaIndex = novasInformacoes.findIndex(info => info.tipo === '1ª Entrada');
                                 if (primeiraEntradaIndex !== -1) {
@@ -2005,6 +2005,61 @@ const FichaNegociacao = () => {
                 <circle cx="12" cy="12" r="10"/>
               </svg>
               Testar
+            </Button>
+            <Button
+              onClick={async () => {
+                try {
+                  console.log('🔥 TESTE FINAL - Forçando nova versão...');
+
+                  // Cache busting com timestamp
+                  const timestamp = Date.now();
+                  const testPayload = {
+                    test: true,
+                    final: true,
+                    timestamp: timestamp,
+                    version_check: true
+                  };
+
+                  const response = await fetch('https://msxhwlwxpvrtmyngwwcp.supabase.co/functions/v1/send-pdfs', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                      'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
+                      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zeGh3bHd4cHZydG15bmd3d2NwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTMyNzU1NTAsImV4cCI6MjA2ODg1MTU1MH0.Nrx7hM9gkQ-jn8gmAhZUYntDuCuuUuHHah_8Gnh6uFQ',
+                      'Cache-Control': 'no-cache',
+                      'Pragma': 'no-cache'
+                    },
+                    body: JSON.stringify(testPayload)
+                  });
+
+                  console.log('📡 Status final:', response.status);
+
+                  const responseText = await response.text();
+                  console.log('📄 Resposta final:', responseText);
+
+                  let data = null;
+                  try {
+                    data = JSON.parse(responseText);
+                  } catch {
+                    data = { message: responseText };
+                  }
+
+                  if (response.status === 200 && data?.success) {
+                    alert(`🎉 SUCESSO TOTAL!\n\n✅ Status: ${response.status}\n🔧 Versão: ${data.version || 'Detectada'}\n📧 Sistema 100% funcional\n\nMensagem: ${data.message}`);
+                  } else if (response.status === 500) {
+                    alert(`⏰ AGUARDANDO ATUALIZAÇÃO\n\n❌ Status: ${response.status}\n⚠️ A versão antiga ainda está ativa\n🔄 Pode levar até 3 minutos para atualizar\n\nTente novamente em 1 minuto`);
+                  } else {
+                    alert(`🤔 RESPOSTA INESPERADA\n\nStatus: ${response.status}\nDados: ${JSON.stringify(data).substring(0, 200)}`);
+                  }
+
+                } catch (error: any) {
+                  alert(`❌ Erro no teste final: ${error.message}\n\nIsso pode ser normal - tente "Salvar e Enviar PDFs" mesmo assim.`);
+                }
+              }}
+              variant="default"
+              className="flex items-center justify-center gap-1 sm:gap-2 w-full sm:w-auto text-xs sm:text-sm px-3 py-2 h-9 sm:h-10"
+            >
+              🔥 Teste Final
             </Button>
             <Button
               onClick={async () => {
