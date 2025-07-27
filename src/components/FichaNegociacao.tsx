@@ -1210,7 +1210,7 @@ const FichaNegociacao = () => {
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Seção Inicial */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div>
               <Label htmlFor="liner">LINER:</Label>
               <Input
